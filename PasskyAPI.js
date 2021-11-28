@@ -57,10 +57,6 @@
             return id.length == 44;
         }
 
-        static isArray(passwords){
-            return Array.isArray(passwords);
-        }
-
         static jsonPasswords(passwords){
             if(typeof(passwords) == 'undefined' || passwords == null) return false;
             for(let i = 0; i < Object.keys(passwords).length; i++){
@@ -72,6 +68,28 @@
         }
     }
 
+    class User{
+        constructor(server, username, password, otp = "", encrypted = true){
+            this.server = server;
+            this.username = username;
+            this.password = password;
+            this.otp = otp;
+
+            Passky.getToken(server, username, password, otp, encrypted).then(response => {
+                this.token = response.token;
+                this.yubico = response.yubico;
+                this.auth = response.auth;
+
+                if(response.error == 8) this.passwords = {};
+                if(response.error == 0) this.passwords = response.passwords;
+
+                this.response = response.error;
+            }).catch(err => {
+                this.response = err;
+            });
+        }
+    }
+
     class Passky{
 
         static getInfo(server){
@@ -79,16 +97,16 @@
                 if(!Validate.url(server)) reject(1);
 
                 fetch(server + "?action=getInfo").then((result) => {
-                    if (result.status != 200) reject(2);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(2);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(2);
+                    reject(505);
                 });
             });
         }
@@ -113,16 +131,16 @@
                     headers: headers,
                     body: data
                 }).then((result) => {
-                    if (result.status != 200) reject(5);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(5);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(5);
+                    reject(505);
                 });
             });
         }
@@ -145,7 +163,7 @@
                     headers: headers,
                     body: data
                 }).then((result) => {
-                    if (result.status != 200) reject(5);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
@@ -158,10 +176,10 @@
                         }
                         resolve(data);
                     }catch(error){
-                        reject(5);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(5);
+                    reject(505);
                 });
             });
         }
@@ -180,7 +198,7 @@
                     method: "POST",
                     headers: headers
                 }).then((result) => {
-                    if (result.status != 200) reject(5);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
@@ -193,10 +211,10 @@
                         }
                         resolve(data);
                     }catch(error){
-                        reject(5);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(5);
+                    reject(505);
                 });
             });
         }
@@ -233,16 +251,16 @@
                     headers: headers,
                     body: data
                 }).then((result) => {
-                    if (result.status != 200) reject(9);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(9);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(9);
+                    reject(505);
                 });
             });
         }
@@ -281,16 +299,16 @@
                     headers: headers,
                     body: data
                 }).then((result) => {
-                    if (result.status != 200) reject(10);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(10);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(10);
+                    reject(505);
                 });
             });
         }
@@ -313,16 +331,16 @@
                     headers: headers,
                     body: data
                 }).then((result) => {
-                    if (result.status != 200) reject(5);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(5);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(5);
+                    reject(505);
                 });
             });
         }
@@ -340,16 +358,16 @@
                     method: "POST",
                     headers: headers
                 }).then((result) => {
-                    if (result.status != 200) reject(4);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(4);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(4);
+                    reject(505);
                 });
             });
         }
@@ -367,16 +385,16 @@
                     method: "POST",
                     headers: headers
                 }).then((result) => {
-                    if (result.status != 200) reject(4);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(4);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(4);
+                    reject(505);
                 });
             });
         }
@@ -394,16 +412,16 @@
                     method: "POST",
                     headers: headers
                 }).then((result) => {
-                    if (result.status != 200) reject(4);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(4);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(4);
+                    reject(505);
                 });
             });
         }
@@ -426,16 +444,16 @@
                     headers: headers,
                     body: data
                 }).then((result) => {
-                    if (result.status != 200) reject(5);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(5);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(5);
+                    reject(505);
                 });
             });
         }
@@ -458,16 +476,16 @@
                     headers: headers,
                     body: data
                 }).then((result) => {
-                    if (result.status != 200) reject(5);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(5);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(5);
+                    reject(505);
                 });
             });
         }
@@ -488,16 +506,16 @@
                     headers: headers,
                     body: data
                 }).then((result) => {
-                    if (result.status != 200) reject(5);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(5);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(5);
+                    reject(505);
                 });
             });
         }
@@ -529,20 +547,21 @@
                     headers: headers,
                     body: data
                 }).then((result) => {
-                    if (result.status != 200) reject(5);
+                    if (result.status != 200) reject(505);
                     return result.text();
                 }).then((response) => {
                     try{
                         resolve(JSON.parse(response));
                     }catch(error){
-                        reject(5);
+                        reject(505);
                     }
                 }).catch(() => {
-                    reject(5);
+                    reject(505);
                 });
             });
         }
     }
 
     window.Passky = Passky;
+    window.User = User;
 })();
