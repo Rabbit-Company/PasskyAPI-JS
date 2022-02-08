@@ -72,29 +72,29 @@
 
 		static getInfo(server){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
+				if(!Validate.url(server)) reject(9);
 
 				fetch(server + "?action=getInfo").then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 						return result.text();
 					}).then((response) => {
 						try{
 							resolve(JSON.parse(response));
 						}catch(error){
-							reject(505);
+							reject(1000);
 						}
 					}).catch(() => {
-						reject(505);
+						reject(1000);
 					});
 			});
 		}
 
 		static createAccount(server, username, password, email){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.email(email)) reject(2);
-				if(!Validate.username(username)) reject(3);
-				if(!Validate.password(password)) reject(4);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.email(email)) reject(6);
+				if(!Validate.username(username)) reject(12);
+				if(!Validate.password(password)) reject(5);
 
 				password = sha512(password + username + "passky2020");
 
@@ -109,25 +109,26 @@
 					headers: headers,
 					body: data
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
 						resolve(JSON.parse(response));
 					}catch(error){
-						reject(505);
+						console.log(error);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 
 		static getToken(server, username, password, otp = "", encrypted = true){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.username(username)) reject(2);
-				if(!Validate.password(password)) reject(3);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.username(username)) reject(12);
+				if(!Validate.password(password)) reject(5);
 				if(!Validate.otp(otp)) reject(4);
 
 				let data = new FormData();
@@ -141,7 +142,7 @@
 					headers: headers,
 					body: data
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
@@ -154,20 +155,20 @@
 						}
 						resolve(data);
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 
 		static getPasswords(server, username, token, password = "", encrypted = true){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.username(username)) reject(2);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.username(username)) reject(12);
 				if(!Validate.token(token)) reject(3);
-				if(!encrypted && !Validate.password(password)) reject(4);
+				if(!encrypted && !Validate.password(password)) reject(5);
 
 				let headers = new Headers();
 				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
@@ -176,7 +177,7 @@
 					method: "POST",
 					headers: headers
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
@@ -189,20 +190,20 @@
 						}
 						resolve(data);
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 
 		static savePassword(server, username, token, password, [pWebsite, pUsername, pPassword, pMessage]){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.username(username)) reject(2);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.username(username)) reject(12);
 				if(!Validate.token(token)) reject(3);
-				if(!Validate.password(password)) reject(4);
+				if(!Validate.password(password)) reject(5);
 	
 				if(!Validate.pWebsite(pWebsite)) reject(5);
 				if(!Validate.pUsername(pUsername)) reject(6);
@@ -229,26 +230,26 @@
 					headers: headers,
 					body: data
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
 						resolve(JSON.parse(response));
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 	
 		static editPassword(server, username, token, password, passwordID, [pWebsite, pUsername, pPassword, pMessage]){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.username(username)) reject(2);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.username(username)) reject(12);
 				if(!Validate.token(token)) reject(3);
-				if(!Validate.password(password)) reject(4);
+				if(!Validate.password(password)) reject(5);
 				if(!Validate.positiveInteger(passwordID)) reject(5);
 				if(!Validate.pWebsite(pWebsite)) reject(6);
 				if(!Validate.pUsername(pUsername)) reject(7);
@@ -276,24 +277,24 @@
 					headers: headers,
 					body: data
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
 						resolve(JSON.parse(response));
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 	
 		static deletePassword(server, username, token, passwordID){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.username(username)) reject(2);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.username(username)) reject(12);
 				if(!Validate.token(token)) reject(3);
 				if(!Validate.positiveInteger(passwordID)) reject(4);
 	
@@ -308,24 +309,24 @@
 					headers: headers,
 					body: data
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
 						resolve(JSON.parse(response));
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 	
 		static deleteAccount(server, username, token){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.username(username)) reject(2);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.username(username)) reject(12);
 				if(!Validate.token(token)) reject(3);
 	
 				let headers = new Headers();
@@ -335,24 +336,24 @@
 					method: "POST",
 					headers: headers
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
 						resolve(JSON.parse(response));
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 	
 		static enable2FA(server, username, token){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.username(username)) reject(2);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.username(username)) reject(12);
 				if(!Validate.token(token)) reject(3);
 	
 				let headers = new Headers();
@@ -362,24 +363,24 @@
 					method: "POST",
 					headers: headers
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
 						resolve(JSON.parse(response));
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 	
 		static disable2FA(server, username, token){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.username(username)) reject(2);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.username(username)) reject(12);
 				if(!Validate.token(token)) reject(3);
 	
 				let headers = new Headers();
@@ -389,24 +390,24 @@
 					method: "POST",
 					headers: headers
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
 						resolve(JSON.parse(response));
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 	
 		static addYubiKey(server, username, token, id){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.username(username)) reject(2);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.username(username)) reject(12);
 				if(!Validate.token(token)) reject(3);
 				if(!Validate.yubiKey(id)) reject(4);
 	
@@ -421,24 +422,24 @@
 					headers: headers,
 					body: data
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
 						resolve(JSON.parse(response));
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 	
 		static removeYubiKey(server, username, token, id){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.username(username)) reject(2);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.username(username)) reject(12);
 				if(!Validate.token(token)) reject(3);
 				if(!Validate.yubiKey(id)) reject(4);
 	
@@ -453,24 +454,24 @@
 					headers: headers,
 					body: data
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
 						resolve(JSON.parse(response));
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 	
 		static forgotUsername(server, email){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.email(email)) reject(2);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.email(email)) reject(6);
 	
 				let headers = new Headers();
 				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
@@ -483,26 +484,26 @@
 					headers: headers,
 					body: data
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
 						resolve(JSON.parse(response));
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
 	
 		static importPasswords(server, username, token, password, passwords){
 			return new Promise((resolve, reject) => {
-				if(!Validate.url(server)) reject(1);
-				if(!Validate.username(username)) reject(2);
+				if(!Validate.url(server)) reject(9);
+				if(!Validate.username(username)) reject(12);
 				if(!Validate.token(token)) reject(3);
-				if(!Validate.password(password)) reject(4);
+				if(!Validate.password(password)) reject(5);
 				if(!Validate.jsonPasswords(passwords)) reject(5);
 	
 				for(let i = 0; i < Object.keys(passwords).length; i++){
@@ -524,16 +525,16 @@
 					headers: headers,
 					body: data
 				}).then((result) => {
-					if (result.status != 200) reject(505);
+					if (result.status != 200) reject(1000);
 					return result.text();
 				}).then((response) => {
 					try{
 						resolve(JSON.parse(response));
 					}catch(error){
-						reject(505);
+						reject(1000);
 					}
 				}).catch(() => {
-					reject(505);
+					reject(1000);
 				});
 			});
 		}
