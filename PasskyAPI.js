@@ -99,13 +99,11 @@
 				if(!Validate.username(username)) return reject(1005);
 				if(!Validate.password(password)) return reject(1006);
 
-				password = CryptoJS.SHA512(password + username + "passky2020");
-
 				let data = new FormData();
 				data.append("email", email);
-
+		
 				let headers = new Headers();
-				headers.append('Authorization', 'Basic ' + btoa(username + ":" + password));
+				headers.append('Authorization', 'Basic ' + btoa(username + ":" + CryptoJS.enc.Base64.stringify(CryptoJS.SHA512(password + username + "passky2020"))));
 
 				fetch(server + "?action=createAccount", {
 					method: "POST",
@@ -136,10 +134,10 @@
 
 				let data = new FormData();
 				data.append("otp", otp);
-
+		
 				let headers = new Headers();
-				headers.append('Authorization', 'Basic ' + btoa(username + ":" + CryptoJS.SHA512(password + username + "passky2020")));
-
+				headers.append('Authorization', 'Basic ' + btoa(username + ":" + CryptoJS.enc.Base64.stringify(CryptoJS.SHA512(password + username + "passky2020"))));
+		
 				fetch(server + "?action=getToken", {
 					method: "POST",
 					headers: headers,
@@ -211,31 +209,31 @@
 				if(!Validate.username(username)) return reject(1005);
 				if(!Validate.token(token)) return reject(1003);
 				if(!Validate.password(password)) return reject(1006);
-
+	
 				if(!Validate.pWebsite(pWebsite)) return reject(1008);
 				if(!Validate.pUsername(pUsername)) return reject(1009);
 				if(!Validate.pPassword(pPassword)) return reject(1010);
 				if(!Validate.pMessage(pMessage)) return reject(1011);
-
+	
 				pWebsite = CryptoJS.AES.encrypt(pWebsite, password).toString();
 				pUsername = CryptoJS.AES.encrypt(pUsername, password).toString();
 				pPassword = CryptoJS.AES.encrypt(pPassword, password).toString();
 				pMessage = CryptoJS.AES.encrypt(pMessage, password).toString();
-
+	
 				if(pWebsite.length > 255) return reject(1008);
 				if(pUsername.length > 255) return reject(1009);
 				if(pPassword.length > 255) return reject(1010);
 				if(pMessage.length > 10000) return reject(1011);
-
+	
 				let data = new FormData();
 				data.append("website", pWebsite);
 				data.append("username", pUsername);
 				data.append("password", pPassword);
 				data.append("message", pMessage);
-
+	
 				let headers = new Headers();
 				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
-
+	
 				fetch(server + "?action=savePassword", {
 					method: "POST",
 					headers: headers,
@@ -254,7 +252,7 @@
 				});
 			});
 		}
-
+	
 		static editPassword(server, username, token, password, passwordID, [pWebsite, pUsername, pPassword, pMessage]){
 			return new Promise((resolve, reject) => {
 				if(!Validate.url(server)) return reject(1001);
@@ -266,27 +264,27 @@
 				if(!Validate.pUsername(pUsername)) return reject(1009);
 				if(!Validate.pPassword(pPassword)) return reject(1010);
 				if(!Validate.pMessage(pMessage)) return reject(1011);
-
+	
 				pWebsite = CryptoJS.AES.encrypt(pWebsite, password).toString();
 				pUsername = CryptoJS.AES.encrypt(pUsername, password).toString();
 				pPassword = CryptoJS.AES.encrypt(pPassword, password).toString();
 				pMessage = CryptoJS.AES.encrypt(pMessage, password).toString();
-
+	
 				if(pWebsite.length > 255) return reject(1008);
 				if(pUsername.length > 255) return reject(1009);
 				if(pPassword.length > 255) return reject(1010);
 				if(pMessage.length > 10000) return reject(1011);
-
+	
 				let data = new FormData();
 				data.append("password_id", passwordID);
 				data.append("website", pWebsite);
 				data.append("username", pUsername);
 				data.append("password", pPassword);
 				data.append("message", pMessage);
-
+	
 				let headers = new Headers();
 				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
-
+	
 				fetch(server + "?action=editPassword", {
 					method: "POST",
 					headers: headers,
@@ -305,20 +303,20 @@
 				});
 			});
 		}
-
+	
 		static deletePassword(server, username, token, passwordID){
 			return new Promise((resolve, reject) => {
 				if(!Validate.url(server)) return reject(1001);
 				if(!Validate.username(username)) return reject(1005);
 				if(!Validate.token(token)) return reject(1003);
 				if(!Validate.positiveInteger(passwordID)) return reject(1012);
-
+	
 				let data = new FormData();
 				data.append("password_id", passwordID);
-
+	
 				let headers = new Headers();
 				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
-
+	
 				fetch(server + "?action=deletePassword", {
 					method: "POST",
 					headers: headers,
@@ -337,16 +335,16 @@
 				});
 			});
 		}
-
+	
 		static deleteAccount(server, username, token){
 			return new Promise((resolve, reject) => {
 				if(!Validate.url(server)) return reject(1001);
 				if(!Validate.username(username)) return reject(1005);
 				if(!Validate.token(token)) return reject(1003);
-
+	
 				let headers = new Headers();
 				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
-
+	
 				fetch(server + "?action=deleteAccount", {
 					method: "POST",
 					headers: headers
@@ -364,16 +362,16 @@
 				});
 			});
 		}
-
+	
 		static enable2FA(server, username, token){
 			return new Promise((resolve, reject) => {
 				if(!Validate.url(server)) return reject(1001);
 				if(!Validate.username(username)) return reject(1005);
 				if(!Validate.token(token)) return reject(1003);
-
+	
 				let headers = new Headers();
 				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
-
+	
 				fetch(server + "?action=enable2fa", {
 					method: "POST",
 					headers: headers
@@ -391,16 +389,16 @@
 				});
 			});
 		}
-
+	
 		static disable2FA(server, username, token){
 			return new Promise((resolve, reject) => {
 				if(!Validate.url(server)) return reject(1001);
 				if(!Validate.username(username)) return reject(1005);
 				if(!Validate.token(token)) return reject(1003);
-
+	
 				let headers = new Headers();
 				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
-
+	
 				fetch(server + "?action=disable2fa", {
 					method: "POST",
 					headers: headers
@@ -418,20 +416,20 @@
 				});
 			});
 		}
-
+	
 		static addYubiKey(server, username, token, id){
 			return new Promise((resolve, reject) => {
 				if(!Validate.url(server)) return reject(1001);
 				if(!Validate.username(username)) return reject(1005);
 				if(!Validate.token(token)) return reject(1003);
 				if(!Validate.yubiKey(id)) return reject(1004);
-
+	
 				let headers = new Headers();
 				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
-
+	
 				let data = new FormData();
 				data.append("id", id);
-
+	
 				fetch(server + "?action=addYubiKey", {
 					method: "POST",
 					headers: headers,
@@ -450,20 +448,20 @@
 				});
 			});
 		}
-
+	
 		static removeYubiKey(server, username, token, id){
 			return new Promise((resolve, reject) => {
 				if(!Validate.url(server)) return reject(1001);
 				if(!Validate.username(username)) return reject(1005);
 				if(!Validate.token(token)) return reject(1003);
 				if(!Validate.yubiKey(id)) return reject(1004);
-
+	
 				let headers = new Headers();
 				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
-
+	
 				let data = new FormData();
 				data.append("id", id);
-
+	
 				fetch(server + "?action=removeYubiKey", {
 					method: "POST",
 					headers: headers,
@@ -482,21 +480,17 @@
 				});
 			});
 		}
-
+	
 		static forgotUsername(server, email){
 			return new Promise((resolve, reject) => {
 				if(!Validate.url(server)) return reject(1001);
 				if(!Validate.email(email)) return reject(1007);
-
-				let headers = new Headers();
-				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
-
+	
 				let data = new FormData();
 				data.append("email", email);
-
+	
 				fetch(server + "?action=forgotUsername", {
 					method: "POST",
-					headers: headers,
 					body: data
 				}).then((result) => {
 					if (result.status != 200) return reject(1000);
@@ -512,13 +506,12 @@
 				});
 			});
 		}
-
+	
 		static importPasswords(server, username, token, passwords, encrypted = false, password = ""){
 			return new Promise((resolve, reject) => {
 				if(!Validate.url(server)) return reject(1001);
 				if(!Validate.username(username)) return reject(1005);
 				if(!Validate.token(token)) return reject(1003);
-				if(!Validate.json(passwords)) return reject(14);
 
 				if(!encrypted){
 					if(!Validate.password(password)) return reject(1006);
@@ -549,13 +542,13 @@
 				}
 
 				if(importPasswords.length == 0) return reject(1013);
-
+	
 				let headers = new Headers();
 				headers.append('Authorization', 'Basic ' + btoa(username + ":" + token));
 				headers.append('Content-Type', 'application/json');
 	
 				let data = JSON.stringify(importPasswords);
-
+	
 				fetch(server + "?action=importPasswords", {
 					method: "POST",
 					headers: headers,
