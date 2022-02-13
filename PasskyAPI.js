@@ -92,6 +92,25 @@
 			});
 		}
 
+		static getStats(server){
+			return new Promise((resolve, reject) => {
+				if(!Validate.url(server)) return reject(1001);
+
+				fetch(server + "?action=getStats").then((result) => {
+					if (result.status != 200) return reject(1000);
+						return result.text();
+					}).then((response) => {
+						try{
+							return resolve(JSON.parse(response));
+						}catch(error){
+							return reject(1000);
+						}
+					}).catch(() => {
+						return reject(1000);
+					});
+			});
+		}
+
 		static createAccount(server, username, password, email){
 			return new Promise((resolve, reject) => {
 				if(!Validate.url(server)) return reject(1001);
