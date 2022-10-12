@@ -1,8 +1,8 @@
 <html>
 	<head>
 		<title>Passky</title>
-		<!-- sha512.js and aes.js files needs to be imported first. -->
-		<script src="example/sha512.js"></script>
+		<!-- sha512.js and XChaCha20.min.js files needs to be imported first. -->
+		<script src="example/XChaCha20.min.js"></script>
 		<script src="example/aes.js"></script>
 		<script src="PasskyAPI.js"></script>
 	</head>
@@ -91,6 +91,12 @@
 			//     console.log(response);
 			// }).catch(err => {
 			//     console.log(err);
+			// });
+
+			// Passky.upgradeAccount(server, username, token, "LICENSE-KEY-GOES-HERE").then(response => {
+			// 	console.log(response);
+			// }).catch(err => {
+			// 	console.log(err);
 			// });
 
 			// let passwords = {};
