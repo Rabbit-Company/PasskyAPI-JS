@@ -1,0 +1,85 @@
+<html>
+	<head>
+		<title>Passky API</title>
+		<style>
+			label{
+				display: block;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Passky API</h1>
+
+		<label id="l-endpoints">
+			Endpoint:
+			<select id="endpoints">
+				<option value="getInfo">getInfo</option>
+				<option value="getStats">getStats</option>
+				<option value="getReport">getReport</option>
+				<option value="createAccount">createAccount</option>
+				<option value="getToken">getToken</option>
+				<option value="getPasswords">getPasswords</option>
+				<option value="savePassword">savePassword</option>
+				<option value="editPassword">editPassword</option>
+				<option value="deletePassword">deletePassword</option>
+				<option value="deletePasswords">deletePasswords</option>
+				<option value="importPasswords">importPasswords</option>
+				<option value="deleteAccount">deleteAccount</option>
+				<option value="enable2FA">enable2FA</option>
+				<option value="disable2FA">disable2FA</option>
+				<option value="addYubiKey">addYubiKey</option>
+				<option value="forgotUsername">forgotUsername</option>
+				<option value="upgradeAccount">upgradeAccount</option>
+			</select>
+		</label>
+
+		<div style="margin: 20 0 20 0;">
+			<label id="l-server">
+				Server: <input id="server" type="url" placeholder="Server" value="http://localhost:8080" /><br>
+			</label>
+			<label id="l-username" style="display: none;">
+				Username: <input id="username" type="text" placeholder="Username" /><br>
+			</label>
+			<label id="l-token" style="display: none;">
+				Token: <input id="token" type="password" placeholder="Token" /><br>
+			</label>
+			<label id="l-masterPassword" style="display: none;">
+				Password: <input id="masterPassword" type="password" placeholder="Password" /><br>
+			</label>
+			<label id="l-email" style="display: none;">
+				Email: <input id="email" type="email" placeholder="Email" /><br>
+			</label>
+			<label id="l-otp" style="display: none;">
+				OTP: <input id="otp" type="text" placeholder="OTP" /><br>
+			</label>
+			<label id="l-passwordID" style="display: none;">
+				Password ID: <input id="passwordID" type="number" placeholder="Password ID" /><br>
+			</label>
+			<div id="l-passwords" style="display: none;">
+				<div style="margin: 20 0 20 0; padding: 10 15 10 15; background-color: #efefef;">
+					<label>
+						Website: <input id="pWebsite" type="text" placeholder="Website" /><br>
+					</label>
+					<label>
+						Username: <input id="pUsername" type="text" placeholder="Username" /><br>
+					</label>
+					<label>
+						Password: <input id="pPassword" type="password" placeholder="Password" /><br>
+					</label>
+					<label>
+						Note: <textarea id="pMessage" rows="5" cols="50"></textarea><br>
+					</label>
+				</div>
+			</div>
+			<label id="l-encrypted" style="display: none;">
+				Encrypted: <input id="encrypted" type="checkbox" checked /><br>
+			</label>
+		</div>
+
+		<button id="btn-submit" type="button">Submit</button><br><br>
+
+		<pre id="output"></pre>
+
+		<script type="module" src="index.js"></script>
+	</body>
+</html>
