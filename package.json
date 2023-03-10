@@ -2,7 +2,7 @@
 	"name": "@rabbit-company/passky-api",
 	"version": "8.0.0",
 	"description": "API for Passky Client",
-	"main": "./src/passky.js",
+	"main": "./module/passky.js",
 	"type": "module",
 	"homepage": "https://passky.org",
 	"funding": "https://rabbit-company.com/donation",
@@ -13,8 +13,8 @@
 		"build": "rabbit-builder"
 	},
 	"files": [
-		"src/validate.js",
-		"src/passky.js"
+		"module/validate.js",
+		"module/passky.js"
 	],
 	"repository": {
 		"type": "git",
@@ -35,7 +35,7 @@
 		"security"
 	],
 	"devDependencies": {
-		"@rabbit-company/rabbit-builder": "^1.0.4"
+		"@rabbit-company/rabbit-builder": "^1.0.5"
 	},
 	"dependencies": {
 		"@rabbit-company/xchacha20": "^1.1.0"

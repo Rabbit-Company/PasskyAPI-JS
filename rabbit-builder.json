@@ -3,7 +3,7 @@
 		"location": "src"
 	},
 	"tasks": {
-		"default": {
+		"dist": {
 			"location": "dist",
 			"output": ".",
 			"execute": {
@@ -17,7 +17,27 @@
 				"minifyJS": {
 					"action": "minifyJS",
 					"sourceMap": "linked",
-					"bundle": {}
+					"bundle": {
+						"format": "esm"
+					}
+				}
+			}
+		},
+		"module": {
+			"location": "module",
+			"output": ".",
+			"execute": {
+				"copy": {
+					"action": "copy",
+					"location": "../src",
+					"excludes": ["/index.html", "/index.js"]
+				},
+				"minifyJS": {
+					"action": "minifyJS",
+					"bundle": {
+						"format": "esm",
+						"minify": false
+					}
 				}
 			}
 		}
