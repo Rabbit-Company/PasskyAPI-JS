@@ -17,9 +17,19 @@ export interface Password {
  * Represents a standard response structure with an error code and information message.
  * @interface
  */
+export interface ErrorResponse {
+	/** The error code associated with the response. */
+	error: Exclude<Error$1, Error$1.SUCCESS | Error$1.NO_SAVED_PASSWORDS>;
+	/** A descriptive message providing more information about the response. */
+	info: string;
+}
+/**
+ * Represents a standard response structure with an error code and information message.
+ * @interface
+ */
 export interface StandardResponse {
 	/** The error code associated with the response. */
-	error: Exclude<Error$1, Error$1.SUCCESS>;
+	error: Error$1;
 	/** A descriptive message providing more information about the response. */
 	info: string;
 }
@@ -76,7 +86,7 @@ export type ServerReportResponse = {
 };
 export type AccountTokenResponse = {
 	/** Indicates a successful operation with Error.SUCCESS. */
-	error: Error$1.SUCCESS;
+	error: Error$1.SUCCESS | Error$1.NO_SAVED_PASSWORDS;
 	/** A descriptive message providing details about the success. */
 	info: string;
 	token: string;
@@ -87,19 +97,19 @@ export type AccountTokenResponse = {
 	passwords: Password[];
 } | {
 	/** Indicates an error occurred with an Error value other than SUCCESS. */
-	error: Exclude<Error$1, Error$1.SUCCESS>;
+	error: Exclude<Error$1, Error$1.SUCCESS | Error$1.NO_SAVED_PASSWORDS>;
 	/** A descriptive message providing details about the error. */
 	info: string;
 };
 export type AccountPasswordsResponse = {
 	/** Indicates a successful operation with Error.SUCCESS. */
-	error: Error$1.SUCCESS;
+	error: Error$1.SUCCESS | Error$1.NO_SAVED_PASSWORDS;
 	/** A descriptive message providing details about the success. */
 	info: string;
 	passwords: Password[];
 } | {
 	/** Indicates an error occurred with an Error value other than SUCCESS. */
-	error: Exclude<Error$1, Error$1.SUCCESS>;
+	error: Exclude<Error$1, Error$1.SUCCESS | Error$1.NO_SAVED_PASSWORDS>;
 	/** A descriptive message providing details about the error. */
 	info: string;
 };
@@ -290,10 +300,10 @@ export declare namespace Errors {
 	function get(id: Error$1): string;
 	/**
 	 * Formats the error response as a JSON object.
-	 * @param {Exclude<Error, Error.SUCCESS>} id - The error code to format.
-	 * @returns {StandardResponse} A JSON object containing the error code and message.
+	 * @param {Exclude<Error, Error.SUCCESS | Error.NO_SAVED_PASSWORDS>} id - The error code to format.
+	 * @returns {ErrorResponse} A JSON object containing the error code and message.
 	 */
-	function getJson(id: Exclude<Error$1, Error$1.SUCCESS>): StandardResponse;
+	function getJson(id: Exclude<Error$1, Error$1.SUCCESS | Error$1.NO_SAVED_PASSWORDS>): ErrorResponse;
 }
 /**
  * The `Validate` namespace provides a collection of validation functions
@@ -436,42 +446,27 @@ export declare class PasskyAPI {
 	static getInfo(server: string): Promise<ServerInfoResponse>;
 	static getStats(server: string): Promise<ServerStatsResponse>;
 	static getReport(server: string): Promise<ServerReportResponse>;
-	static createAccount(server: string, username: string, password: string, email: string): Promise<StandardResponse>;
-	static getToken(server: string, username: string, password: string, otp?: string): Promise<AccountTokenResponse>;
+	static createAccount(server: string, username: string, authenticationHash: string, email: string): Promise<StandardResponse>;
+	static getToken(server: string, username: string, authenticationHash: string, otp?: string): Promise<AccountTokenResponse>;
 	getToken(otp?: string): Promise<AccountTokenResponse>;
 	static getPasswords(server: string, username: string, token: string): Promise<AccountPasswordsResponse>;
 	getPasswords(): Promise<AccountPasswordsResponse>;
 	static savePassword(server: string, username: string, token: string, encryptionHash: string, passwordData: PasswordData): Promise<StandardResponse>;
+	savePassword(passwordData: PasswordData): Promise<StandardResponse>;
 	static editPassword(server: string, username: string, token: string, encryptionHash: string, passwordData: Password): Promise<StandardResponse>;
+	editPassword(passwordData: Password): Promise<StandardResponse>;
 	static deletePassword(server: string, username: string, token: string, passwordID: string | number): Promise<StandardResponse>;
+	deletePassword(passwordID: string | number): Promise<StandardResponse>;
 	static deletePasswords(server: string, username: string, token: string): Promise<StandardResponse>;
+	deletePasswords(): Promise<StandardResponse>;
 	static deleteAccount(server: string, username: string, token: string): Promise<StandardResponse>;
-	static enable2FA(server: string, username: string, token: string): Promise<StandardResponse | {
-		error: Error$1.SUCCESS;
-		info: string;
-		secret: string;
-		qrcode: string;
-		codes: string;
-	}>;
+	deleteAccount(): Promise<StandardResponse>;
+	static enable2FA(server: string, username: string, token: string): Promise<AccountEnable2FaResponse>;
 	static disable2FA(server: string, username: string, token: string): Promise<StandardResponse>;
-	static addYubiKey(server: string, username: string, token: string, yubiKeyOTP: string): Promise<StandardResponse | {
-		error: Error$1.SUCCESS;
-		info: string;
-		yubico: string;
-		codes: string;
-	}>;
-	static removeYubiKey(server: string, username: string, token: string, yubiKeyOTP: string): Promise<StandardResponse | {
-		error: Error$1.SUCCESS;
-		info: string;
-		yubico: string;
-	}>;
+	static addYubiKey(server: string, username: string, token: string, yubiKeyOTP: string): Promise<AccountAddYubiKeyResponse>;
+	static removeYubiKey(server: string, username: string, token: string, yubiKeyOTP: string): Promise<AccountRemoveYubiKeyResponse>;
 	static forgotUsername(server: string, email: string): Promise<StandardResponse>;
-	static upgradeAccount(server: string, username: string, token: string, license: string): Promise<StandardResponse | {
-		error: Error$1.SUCCESS;
-		info: string;
-		max_passwords: number;
-		premium_expires: string;
-	}>;
+	static upgradeAccount(server: string, username: string, token: string, license: string): Promise<AccountUpgradeResponse>;
 	static importPasswords(server: string, username: string, token: string, encryptionHash: string, passwords: PasswordData[]): Promise<AccountImportPasswords>;
 }
 

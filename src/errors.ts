@@ -1,4 +1,4 @@
-import type { StandardResponse } from "./types";
+import type { ErrorResponse, StandardResponse } from "./types";
 
 /**
  * Enum representing various error codes used throughout the application.
@@ -171,10 +171,10 @@ namespace Errors {
 
 	/**
 	 * Formats the error response as a JSON object.
-	 * @param {Exclude<Error, Error.SUCCESS>} id - The error code to format.
-	 * @returns {StandardResponse} A JSON object containing the error code and message.
+	 * @param {Exclude<Error, Error.SUCCESS | Error.NO_SAVED_PASSWORDS>} id - The error code to format.
+	 * @returns {ErrorResponse} A JSON object containing the error code and message.
 	 */
-	export function getJson(id: Exclude<Error, Error.SUCCESS>): StandardResponse {
+	export function getJson(id: Exclude<Error, Error.SUCCESS | Error.NO_SAVED_PASSWORDS>): ErrorResponse {
 		return { error: id, info: list[id] };
 	}
 }

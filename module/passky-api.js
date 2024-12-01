@@ -1204,20 +1204,20 @@ class PasskyAPI {
       return errors_default.getJson(err instanceof SyntaxError ? 1001 /* INVALID_RESPONSE_FORMAT */ : 1000 /* SERVER_UNREACHABLE */);
     }
   }
-  static async createAccount(server, username, password, email) {
+  static async createAccount(server, username, authenticationHash, email) {
     if (!validate_default.url(server))
       return errors_default.getJson(1000 /* SERVER_UNREACHABLE */);
     if (!validate_default.email(email))
       return errors_default.getJson(6 /* INVALID_EMAIL */);
     if (!validate_default.username(username))
       return errors_default.getJson(12 /* INVALID_USERNAME_FORMAT */);
-    if (!validate_default.password(password))
-      return errors_default.getJson(5 /* WEAK_PASSWORD */);
+    if (!validate_default.hash(authenticationHash))
+      return errors_default.getJson(1002 /* INVALID_HASH */);
     try {
       const data = new FormData;
       data.append("email", email);
       const headers = new Headers;
-      headers.append("Authorization", "Basic " + btoa(username + ":" + password));
+      headers.append("Authorization", "Basic " + btoa(username + ":" + authenticationHash));
       const result = await fetch(server + "?action=createAccount", {
         method: "POST",
         headers,
@@ -1231,20 +1231,20 @@ class PasskyAPI {
       return errors_default.getJson(err instanceof SyntaxError ? 1001 /* INVALID_RESPONSE_FORMAT */ : 1000 /* SERVER_UNREACHABLE */);
     }
   }
-  static async getToken(server, username, password, otp = "") {
+  static async getToken(server, username, authenticationHash, otp = "") {
     if (!validate_default.url(server))
       return errors_default.getJson(1000 /* SERVER_UNREACHABLE */);
     if (!validate_default.username(username))
       return errors_default.getJson(1 /* INVALID_USERNAME */);
-    if (!validate_default.password(password))
-      return errors_default.getJson(2 /* INVALID_PASSWORD */);
+    if (!validate_default.hash(authenticationHash))
+      return errors_default.getJson(1002 /* INVALID_HASH */);
     if (!validate_default.otp(otp))
       return errors_default.getJson(19 /* INVALID_OTP */);
     try {
       const data = new FormData;
       data.append("otp", otp);
       const headers = new Headers;
-      headers.append("Authorization", "Basic " + btoa(username + ":" + password));
+      headers.append("Authorization", "Basic " + btoa(username + ":" + authenticationHash));
       const result = await fetch(server + "?action=getToken", {
         method: "POST",
         headers,
@@ -1259,7 +1259,9 @@ class PasskyAPI {
     }
   }
   async getToken(otp = "") {
-    const res = await PasskyAPI.getToken(this.server, this.username, this.password, otp);
+    if (!this.authenticationHash)
+      return errors_default.getJson(1002 /* INVALID_HASH */);
+    const res = await PasskyAPI.getToken(this.server, this.username, this.authenticationHash, otp);
     if (!res.error)
       this.token = res.token;
     return res;
@@ -1341,6 +1343,13 @@ class PasskyAPI {
       return errors_default.getJson(err instanceof SyntaxError ? 1001 /* INVALID_RESPONSE_FORMAT */ : 1000 /* SERVER_UNREACHABLE */);
     }
   }
+  async savePassword(passwordData) {
+    if (!this.token)
+      return errors_default.getJson(25 /* INVALID_OR_EXPIRED_TOKEN */);
+    if (!this.encryptionHash)
+      return errors_default.getJson(1002 /* INVALID_HASH */);
+    return await PasskyAPI.savePassword(this.server, this.username, this.token, this.encryptionHash, passwordData);
+  }
   static async editPassword(server, username, token, encryptionHash, passwordData) {
     if (!validate_default.url(server))
       return errors_default.getJson(1000 /* SERVER_UNREACHABLE */);
@@ -1394,6 +1403,13 @@ class PasskyAPI {
       return errors_default.getJson(err instanceof SyntaxError ? 1001 /* INVALID_RESPONSE_FORMAT */ : 1000 /* SERVER_UNREACHABLE */);
     }
   }
+  async editPassword(passwordData) {
+    if (!this.token)
+      return errors_default.getJson(25 /* INVALID_OR_EXPIRED_TOKEN */);
+    if (!this.encryptionHash)
+      return errors_default.getJson(1002 /* INVALID_HASH */);
+    return await PasskyAPI.editPassword(this.server, this.username, this.token, this.encryptionHash, passwordData);
+  }
   static async deletePassword(server, username, token, passwordID) {
     if (!validate_default.url(server))
       return errors_default.getJson(1000 /* SERVER_UNREACHABLE */);
@@ -1421,6 +1437,11 @@ class PasskyAPI {
       return errors_default.getJson(err instanceof SyntaxError ? 1001 /* INVALID_RESPONSE_FORMAT */ : 1000 /* SERVER_UNREACHABLE */);
     }
   }
+  async deletePassword(passwordID) {
+    if (!this.token)
+      return errors_default.getJson(25 /* INVALID_OR_EXPIRED_TOKEN */);
+    return await PasskyAPI.deletePassword(this.server, this.username, this.token, passwordID);
+  }
   static async deletePasswords(server, username, token) {
     if (!validate_default.url(server))
       return errors_default.getJson(1000 /* SERVER_UNREACHABLE */);
@@ -1443,6 +1464,11 @@ class PasskyAPI {
       return errors_default.getJson(err instanceof SyntaxError ? 1001 /* INVALID_RESPONSE_FORMAT */ : 1000 /* SERVER_UNREACHABLE */);
     }
   }
+  async deletePasswords() {
+    if (!this.token)
+      return errors_default.getJson(25 /* INVALID_OR_EXPIRED_TOKEN */);
+    return await PasskyAPI.deletePasswords(this.server, this.username, this.token);
+  }
   static async deleteAccount(server, username, token) {
     if (!validate_default.url(server))
       return errors_default.getJson(1000 /* SERVER_UNREACHABLE */);
@@ -1464,6 +1490,11 @@ class PasskyAPI {
     } catch (err) {
       return errors_default.getJson(err instanceof SyntaxError ? 1001 /* INVALID_RESPONSE_FORMAT */ : 1000 /* SERVER_UNREACHABLE */);
     }
+  }
+  async deleteAccount() {
+    if (!this.token)
+      return errors_default.getJson(25 /* INVALID_OR_EXPIRED_TOKEN */);
+    return await PasskyAPI.deleteAccount(this.server, this.username, this.token);
   }
   static async enable2FA(server, username, token) {
     if (!validate_default.url(server))

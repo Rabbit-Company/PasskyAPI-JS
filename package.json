@@ -38,9 +38,10 @@
 		"security"
 	],
 	"devDependencies": {
+		"@rabbit-company/logger": "npm:@jsr/rabbit-company__logger@4.0.1",
+		"@rabbit-company/password-generator": "npm:@jsr/rabbit-company__password-generator@2.2.0",
 		"@types/bun": "^1.1.14",
-		"bun-plugin-dts": "^0.3.0",
-		"@rabbit-company/logger": "npm:@jsr/rabbit-company__logger@4.0.1"
+		"bun-plugin-dts": "^0.3.0"
 	},
 	"dependencies": {
 		"@rabbit-company/argon2id": "npm:@jsr/rabbit-company__argon2id@2.1.0",

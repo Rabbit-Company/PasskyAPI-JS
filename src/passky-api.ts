@@ -124,18 +124,18 @@ class PasskyAPI {
 		}
 	}
 
-	static async createAccount(server: string, username: string, password: string, email: string): Promise<StandardResponse> {
+	static async createAccount(server: string, username: string, authenticationHash: string, email: string): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.email(email)) return Errors.getJson(Error.INVALID_EMAIL);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
-		if (!Validate.password(password)) return Errors.getJson(Error.WEAK_PASSWORD);
+		if (!Validate.hash(authenticationHash)) return Errors.getJson(Error.INVALID_HASH);
 
 		try {
 			const data = new FormData();
 			data.append("email", email);
 
 			const headers = new Headers();
-			headers.append("Authorization", "Basic " + btoa(username + ":" + password));
+			headers.append("Authorization", "Basic " + btoa(username + ":" + authenticationHash));
 
 			const result = await fetch(server + "?action=createAccount", {
 				method: "POST",
@@ -152,10 +152,10 @@ class PasskyAPI {
 		}
 	}
 
-	static async getToken(server: string, username: string, password: string, otp: string = ""): Promise<AccountTokenResponse> {
+	static async getToken(server: string, username: string, authenticationHash: string, otp: string = ""): Promise<AccountTokenResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME);
-		if (!Validate.password(password)) return Errors.getJson(Error.INVALID_PASSWORD);
+		if (!Validate.hash(authenticationHash)) return Errors.getJson(Error.INVALID_HASH);
 		if (!Validate.otp(otp)) return Errors.getJson(Error.INVALID_OTP);
 
 		try {
@@ -163,7 +163,7 @@ class PasskyAPI {
 			data.append("otp", otp);
 
 			const headers = new Headers();
-			headers.append("Authorization", "Basic " + btoa(username + ":" + password));
+			headers.append("Authorization", "Basic " + btoa(username + ":" + authenticationHash));
 
 			const result = await fetch(server + "?action=getToken", {
 				method: "POST",
@@ -181,7 +181,8 @@ class PasskyAPI {
 	}
 
 	async getToken(otp: string = ""): Promise<AccountTokenResponse> {
-		const res = await PasskyAPI.getToken(this.server, this.username, this.password, otp);
+		if (!this.authenticationHash) return Errors.getJson(Error.INVALID_HASH);
+		const res = await PasskyAPI.getToken(this.server, this.username, this.authenticationHash, otp);
 		if (!res.error) this.token = res.token;
 		return res;
 	}
@@ -260,6 +261,12 @@ class PasskyAPI {
 		}
 	}
 
+	async savePassword(passwordData: PasswordData): Promise<StandardResponse> {
+		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		if (!this.encryptionHash) return Errors.getJson(Error.INVALID_HASH);
+		return await PasskyAPI.savePassword(this.server, this.username, this.token, this.encryptionHash, passwordData);
+	}
+
 	static async editPassword(server: string, username: string, token: string, encryptionHash: string, passwordData: Password): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME);
@@ -308,6 +315,12 @@ class PasskyAPI {
 		}
 	}
 
+	async editPassword(passwordData: Password): Promise<StandardResponse> {
+		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		if (!this.encryptionHash) return Errors.getJson(Error.INVALID_HASH);
+		return await PasskyAPI.editPassword(this.server, this.username, this.token, this.encryptionHash, passwordData);
+	}
+
 	static async deletePassword(server: string, username: string, token: string, passwordID: string | number) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -336,6 +349,11 @@ class PasskyAPI {
 		}
 	}
 
+	async deletePassword(passwordID: string | number): Promise<StandardResponse> {
+		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		return await PasskyAPI.deletePassword(this.server, this.username, this.token, passwordID);
+	}
+
 	static async deletePasswords(server: string, username: string, token: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -359,6 +377,11 @@ class PasskyAPI {
 		}
 	}
 
+	async deletePasswords(): Promise<StandardResponse> {
+		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		return await PasskyAPI.deletePasswords(this.server, this.username, this.token);
+	}
+
 	static async deleteAccount(server: string, username: string, token: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -380,6 +403,11 @@ class PasskyAPI {
 		} catch (err) {
 			return Errors.getJson(err instanceof SyntaxError ? Error.INVALID_RESPONSE_FORMAT : Error.SERVER_UNREACHABLE);
 		}
+	}
+
+	async deleteAccount(): Promise<StandardResponse> {
+		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		return await PasskyAPI.deleteAccount(this.server, this.username, this.token);
 	}
 
 	static async enable2FA(server: string, username: string, token: string) {

@@ -19,9 +19,20 @@ export interface Password {
  * Represents a standard response structure with an error code and information message.
  * @interface
  */
+export interface ErrorResponse {
+	/** The error code associated with the response. */
+	error: Exclude<Error, Error.SUCCESS | Error.NO_SAVED_PASSWORDS>;
+	/** A descriptive message providing more information about the response. */
+	info: string;
+}
+
+/**
+ * Represents a standard response structure with an error code and information message.
+ * @interface
+ */
 export interface StandardResponse {
 	/** The error code associated with the response. */
-	error: Exclude<Error, Error.SUCCESS>;
+	error: Error;
 	/** A descriptive message providing more information about the response. */
 	info: string;
 }
@@ -89,7 +100,7 @@ export type ServerReportResponse =
 export type AccountTokenResponse =
 	| {
 			/** Indicates a successful operation with Error.SUCCESS. */
-			error: Error.SUCCESS;
+			error: Error.SUCCESS | Error.NO_SAVED_PASSWORDS;
 			/** A descriptive message providing details about the success. */
 			info: string;
 			token: string;
@@ -101,7 +112,7 @@ export type AccountTokenResponse =
 	  }
 	| {
 			/** Indicates an error occurred with an Error value other than SUCCESS. */
-			error: Exclude<Error, Error.SUCCESS>;
+			error: Exclude<Error, Error.SUCCESS | Error.NO_SAVED_PASSWORDS>;
 			/** A descriptive message providing details about the error. */
 			info: string;
 	  };
@@ -109,14 +120,14 @@ export type AccountTokenResponse =
 export type AccountPasswordsResponse =
 	| {
 			/** Indicates a successful operation with Error.SUCCESS. */
-			error: Error.SUCCESS;
+			error: Error.SUCCESS | Error.NO_SAVED_PASSWORDS;
 			/** A descriptive message providing details about the success. */
 			info: string;
 			passwords: Password[];
 	  }
 	| {
 			/** Indicates an error occurred with an Error value other than SUCCESS. */
-			error: Exclude<Error, Error.SUCCESS>;
+			error: Exclude<Error, Error.SUCCESS | Error.NO_SAVED_PASSWORDS>;
 			/** A descriptive message providing details about the error. */
 			info: string;
 	  };
