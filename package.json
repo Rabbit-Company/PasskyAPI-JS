@@ -1,20 +1,23 @@
 {
 	"name": "@rabbit-company/passky-api",
-	"version": "8.0.0",
+	"version": "8.1.0",
 	"description": "API for Passky Client",
 	"main": "./module/passky.js",
+	"browser": "./module/passky.js",
 	"type": "module",
-	"homepage": "https://passky.org",
+	"homepage": "https://github.com/Rabbit-Company/PasskyAPI-JS",
 	"funding": "https://rabbit-company.com/donation",
 	"author": "Rabbit Company <info@rabbit-company.com>",
 	"license": "MIT",
 	"private": false,
 	"scripts": {
-		"build": "rabbit-builder"
+		"build": "bun run build.ts"
 	},
 	"files": [
 		"module/validate.js",
-		"module/passky.js"
+		"module/validate.d.ts",
+		"module/passky.js",
+		"module/passky.d.ts"
 	],
 	"repository": {
 		"type": "git",
@@ -35,9 +38,16 @@
 		"security"
 	],
 	"devDependencies": {
-		"@rabbit-company/rabbit-builder": "^1.0.5"
+		"@types/bun": "^1.1.14",
+		"bun-plugin-dts": "^0.3.0",
+		"@rabbit-company/logger": "npm:@jsr/rabbit-company__logger@4.0.1"
 	},
 	"dependencies": {
-		"@rabbit-company/xchacha20": "^1.1.0"
+		"@rabbit-company/argon2id": "npm:@jsr/rabbit-company__argon2id@2.1.0",
+		"@rabbit-company/blake2b": "npm:@jsr/rabbit-company__blake2b@2.1.1",
+		"@rabbit-company/password-entropy": "npm:@jsr/rabbit-company__password-entropy@2.1.1"
+	},
+	"peerDependencies": {
+		"typescript": "^5.7.2"
 	}
 }

@@ -1,0 +1,8 @@
+{
+	"name": "@rabbit-company/passky-api",
+	"version": "8.1.0",
+	"exports": "./src/passky-api.ts",
+	"publish": {
+		"include": ["LICENSE", "README.md", "src/passky-api.ts", "src/errors.ts", "src/types.ts", "src/validate.ts"]
+	}
+}
