@@ -9,7 +9,7 @@ import {
 	type ServerStatsResponse,
 	type StandardResponse,
 } from "../src/passky-api";
-import type { Password, PasswordData } from "../src/types";
+import type { AccountEnable2FaResponse, AccountImportPasswords, Password, PasswordData } from "../src/types";
 import PasswordGenerator from "@rabbit-company/password-generator";
 
 const server = "http://localhost:8080";
@@ -17,6 +17,27 @@ const username = PasswordGenerator.generate(10, false, true, false);
 const password = PasswordGenerator.generate(30);
 const email = "info@passky.org";
 const otp = "";
+
+const importPasswords: PasswordData[] = [
+	{
+		website: "passky.org",
+		username: PasswordGenerator.generate(10, false, true, false),
+		password: PasswordGenerator.generate(30),
+		message: "",
+	},
+	{
+		website: "rabbit-company.com",
+		username: PasswordGenerator.generate(20, false, true, false),
+		password: PasswordGenerator.generate(40),
+		message: "",
+	},
+	{
+		website: "vault.passky.org",
+		username: PasswordGenerator.generate(30, false, true, false),
+		password: PasswordGenerator.generate(50),
+		message: "",
+	},
+];
 
 const account = new PasskyAPI(server, username, password);
 
@@ -77,6 +98,21 @@ describe("live server", () => {
 
 	test("deletePassword", async () => {
 		const res: StandardResponse = await account.deletePassword(passwords[0].id);
+		expect(res.error).toBe(0);
+	});
+
+	test("importPasswords", async () => {
+		const res: AccountImportPasswords = await account.importPasswords(importPasswords);
+		expect(res.error).toBe(0);
+	});
+
+	test("enable2FA", async () => {
+		const res: AccountEnable2FaResponse = await account.enable2FA();
+		expect(res.error).toBe(0);
+	});
+
+	test("disable2FA", async () => {
+		const res: StandardResponse = await account.disable2FA();
 		expect(res.error).toBe(0);
 	});
 
