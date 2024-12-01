@@ -13,15 +13,16 @@ import type { Password, PasswordData } from "../src/types";
 import PasswordGenerator from "@rabbit-company/password-generator";
 
 const server = "http://localhost:8080";
-const username = "test123";
+const username = PasswordGenerator.generate(10, false, true, false);
 const password = PasswordGenerator.generate(30);
 const email = "info@passky.org";
 const otp = "";
 
-const encryptedHash = (await PasskyAPI.generateEncryptionHash(username, password)) || "";
-const authenticationHash = (await PasskyAPI.generateAuthenticationHash(username, password)) || "";
+const account = new PasskyAPI(server, username, password);
 
-let token = "";
+await account.generateAuthenticationHash();
+await account.generateEncryptionHash();
+
 let passwords: Password[] = [];
 
 describe("live server", () => {
@@ -41,13 +42,12 @@ describe("live server", () => {
 	});
 
 	test("createAccount", async () => {
-		const res: StandardResponse = await PasskyAPI.createAccount(server, username, authenticationHash, email);
+		const res: StandardResponse = await account.createAccount(email);
 		expect([0, 4]).toContain(res.error);
 	});
 
 	test("getToken", async () => {
-		const res: AccountTokenResponse = await PasskyAPI.getToken(server, username, authenticationHash, otp);
-		if (res.error === Error.SUCCESS || res.error === Error.NO_SAVED_PASSWORDS) token = res.token;
+		const res: AccountTokenResponse = await account.getToken(otp);
 		expect([0, 8]).toContain(res.error);
 	});
 
@@ -58,12 +58,12 @@ describe("live server", () => {
 			password: PasswordGenerator.generate(30),
 			message: "",
 		};
-		const res: StandardResponse = await PasskyAPI.savePassword(server, username, token, encryptedHash, passwordData);
+		const res: StandardResponse = await account.savePassword(passwordData);
 		expect(res.error).toBe(0);
 	});
 
 	test("getPasswords", async () => {
-		const res: AccountPasswordsResponse = await PasskyAPI.getPasswords(server, username, token);
+		const res: AccountPasswordsResponse = await account.getPasswords();
 		if (res.error === Error.SUCCESS || res.error === Error.NO_SAVED_PASSWORDS) passwords = res.passwords;
 		expect([0, 8]).toContain(res.error);
 	});
@@ -71,22 +71,22 @@ describe("live server", () => {
 	test("editPassword", async () => {
 		const changedPassword = passwords[0];
 		changedPassword.password = PasswordGenerator.generate(35);
-		const res: StandardResponse = await PasskyAPI.editPassword(server, username, token, encryptedHash, changedPassword);
+		const res: StandardResponse = await account.editPassword(changedPassword);
 		expect(res.error).toBe(0);
 	});
 
 	test("deletePassword", async () => {
-		const res: StandardResponse = await PasskyAPI.deletePassword(server, username, token, passwords[0].id);
+		const res: StandardResponse = await account.deletePassword(passwords[0].id);
 		expect(res.error).toBe(0);
 	});
 
 	test("deletePasswords", async () => {
-		const res: StandardResponse = await PasskyAPI.deletePasswords(server, username, token);
+		const res: StandardResponse = await account.deletePasswords();
 		expect(res.error).toBe(0);
 	});
 
 	test("deleteAccount", async () => {
-		const res: StandardResponse = await PasskyAPI.deleteAccount(server, username, token);
+		const res: StandardResponse = await account.deleteAccount();
 		expect(res.error).toBe(0);
 	});
 });

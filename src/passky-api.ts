@@ -152,6 +152,11 @@ class PasskyAPI {
 		}
 	}
 
+	async createAccount(email: string) {
+		if (!this.authenticationHash) return Errors.getJson(Error.INVALID_HASH);
+		return await PasskyAPI.createAccount(this.server, this.username, this.authenticationHash, email);
+	}
+
 	static async getToken(server: string, username: string, authenticationHash: string, otp: string = ""): Promise<AccountTokenResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME);
@@ -183,7 +188,7 @@ class PasskyAPI {
 	async getToken(otp: string = ""): Promise<AccountTokenResponse> {
 		if (!this.authenticationHash) return Errors.getJson(Error.INVALID_HASH);
 		const res = await PasskyAPI.getToken(this.server, this.username, this.authenticationHash, otp);
-		if (!res.error) this.token = res.token;
+		if (res.error === Error.SUCCESS || res.error === Error.NO_SAVED_PASSWORDS) this.token = res.token;
 		return res;
 	}
 
@@ -433,6 +438,11 @@ class PasskyAPI {
 		}
 	}
 
+	async enable2FA(): Promise<AccountEnable2FaResponse> {
+		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		return await PasskyAPI.enable2FA(this.server, this.username, this.token);
+	}
+
 	static async disable2FA(server: string, username: string, token: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -454,6 +464,11 @@ class PasskyAPI {
 		} catch (err) {
 			return Errors.getJson(err instanceof SyntaxError ? Error.INVALID_RESPONSE_FORMAT : Error.SERVER_UNREACHABLE);
 		}
+	}
+
+	async disable2FA(): Promise<StandardResponse> {
+		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		return await PasskyAPI.disable2FA(this.server, this.username, this.token);
 	}
 
 	static async addYubiKey(server: string, username: string, token: string, yubiKeyOTP: string) {
@@ -484,6 +499,11 @@ class PasskyAPI {
 		}
 	}
 
+	async addYubiKey(yubiKeyOTP: string): Promise<AccountAddYubiKeyResponse> {
+		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		return await PasskyAPI.addYubiKey(this.server, this.username, this.token, yubiKeyOTP);
+	}
+
 	static async removeYubiKey(server: string, username: string, token: string, yubiKeyOTP: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -510,6 +530,11 @@ class PasskyAPI {
 		} catch (err) {
 			return Errors.getJson(err instanceof SyntaxError ? Error.INVALID_RESPONSE_FORMAT : Error.SERVER_UNREACHABLE);
 		}
+	}
+
+	async removeYubiKey(yubiKeyOTP: string): Promise<AccountRemoveYubiKeyResponse> {
+		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		return await PasskyAPI.removeYubiKey(this.server, this.username, this.token, yubiKeyOTP);
 	}
 
 	static async forgotUsername(server: string, email: string) {
@@ -560,6 +585,11 @@ class PasskyAPI {
 		} catch (err) {
 			return Errors.getJson(err instanceof SyntaxError ? Error.INVALID_RESPONSE_FORMAT : Error.SERVER_UNREACHABLE);
 		}
+	}
+
+	async upgradeAccount(license: string): Promise<AccountUpgradeResponse> {
+		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		return await PasskyAPI.upgradeAccount(this.server, this.username, this.token, license);
 	}
 
 	static async importPasswords(
@@ -614,6 +644,12 @@ class PasskyAPI {
 		} catch (err) {
 			return Errors.getJson(err instanceof SyntaxError ? Error.INVALID_RESPONSE_FORMAT : Error.SERVER_UNREACHABLE);
 		}
+	}
+
+	async importPasswords(passwords: PasswordData[]): Promise<AccountImportPasswords> {
+		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		if (!this.encryptionHash) return Errors.getJson(Error.INVALID_HASH);
+		return await PasskyAPI.importPasswords(this.server, this.username, this.token, this.encryptionHash, passwords);
 	}
 }
 
