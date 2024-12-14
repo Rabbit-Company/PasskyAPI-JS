@@ -656,14 +656,17 @@ class PasskyAPI {
 export type {
 	AccountAddYubiKeyResponse,
 	AccountEnable2FaResponse,
+	AccountImportPasswords,
 	AccountPasswordsResponse,
 	AccountRemoveYubiKeyResponse,
 	AccountTokenResponse,
 	AccountUpgradeResponse,
+	Password,
+	PasswordData,
 	ServerInfoResponse,
 	ServerReportResponse,
 	ServerStatsResponse,
 	StandardResponse,
 };
 
-export { PasskyAPI, XChaCha20, Error, Errors, Validate };
+export { PasskyAPI, Blake2b, Argon2id, XChaCha20, Error, Errors, Validate };
