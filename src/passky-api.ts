@@ -47,6 +47,14 @@ class PasskyAPI {
 		this.password = password;
 	}
 
+	/**
+	 * Generates an authentication hash for a given username and password.
+	 *
+	 * @static
+	 * @param {string} username - The username to generate the hash for.
+	 * @param {string} password - The password to generate the hash for.
+	 * @returns {Promise<string | null>} A promise resolving to the authentication hash, or null if an error occurs.
+	 */
 	static async generateAuthenticationHash(username: string, password: string): Promise<string | null> {
 		const authHash = Blake2b.hash(`passky2020-${password}-${username}`);
 		const authSalt = Blake2b.hash(`passky2020-${username}`);
@@ -58,11 +66,24 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Generates and sets the authentication hash for the current instance.
+	 *
+	 * @returns {Promise<string | null>} A promise resolving to the generated authentication hash, or null if an error occurs.
+	 */
 	async generateAuthenticationHash(): Promise<string | null> {
 		this.authenticationHash = await PasskyAPI.generateAuthenticationHash(this.username, this.password);
 		return this.authenticationHash;
 	}
 
+	/**
+	 * Generates an encryption hash for a given username and password.
+	 *
+	 * @static
+	 * @param {string} username - The username to generate the hash for.
+	 * @param {string} password - The password to generate the hash for.
+	 * @returns {Promise<string | null>} A promise resolving to the encryption hash, or null if an error occurs.
+	 */
 	static async generateEncryptionHash(username: string, password: string): Promise<string | null> {
 		const encHash = Blake2b.hash(`${username}-${password}-passky2020`);
 		const encSalt = Blake2b.hash(`${username}-passky2020`);
@@ -74,11 +95,23 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Generates and sets the encryption hash for the current instance.
+	 *
+	 * @returns {Promise<string | null>} A promise resolving to the generated encryption hash, or null if an error occurs.
+	 */
 	async generateEncryptionHash(): Promise<string | null> {
 		this.encryptionHash = await PasskyAPI.generateEncryptionHash(this.username, this.password);
 		return this.encryptionHash;
 	}
 
+	/**
+	 * Fetches server information from the specified server URL.
+	 *
+	 * @static
+	 * @param {string} server - The server URL to fetch the information from.
+	 * @returns {Promise<ServerInfoResponse>} A promise resolving to the server information response.
+	 */
 	static async getInfo(server: string): Promise<ServerInfoResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 
@@ -94,6 +127,13 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Fetches server statistics from the specified server URL.
+	 *
+	 * @static
+	 * @param {string} server - The server URL to fetch the statistics from.
+	 * @returns {Promise<ServerStatsResponse>} A promise resolving to the server statistics response.
+	 */
 	static async getStats(server: string): Promise<ServerStatsResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 
@@ -109,6 +149,13 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Fetches a server activity report from the specified server URL.
+	 *
+	 * @static
+	 * @param {string} server - The server URL to fetch the report from.
+	 * @returns {Promise<ServerReportResponse>} A promise resolving to the server activity report response.
+	 */
 	static async getReport(server: string): Promise<ServerReportResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 
@@ -124,6 +171,16 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Creates a new account on the specified server.
+	 *
+	 * @static
+	 * @param {string} server - The server URL where the account should be created.
+	 * @param {string} username - The username for the new account.
+	 * @param {string} authenticationHash - The hash generated for authentication.
+	 * @param {string} email - The email address for the new account.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response of the account creation operation.
+	 */
 	static async createAccount(server: string, username: string, authenticationHash: string, email: string): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.email(email)) return Errors.getJson(Error.INVALID_EMAIL);
@@ -152,11 +209,27 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Creates a new account using the current instance's details.
+	 *
+	 * @param {string} email - The email address for the new account.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response of the account creation operation.
+	 */
 	async createAccount(email: string) {
 		if (!this.authenticationHash) return Errors.getJson(Error.INVALID_HASH);
 		return await PasskyAPI.createAccount(this.server, this.username, this.authenticationHash, email);
 	}
 
+	/**
+	 * Fetches an authentication token from the specified server.
+	 *
+	 * @static
+	 * @param {string} server - The server URL to fetch the token from.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} authenticationHash - The hash generated for authentication.
+	 * @param {string} [otp=""] - An optional one-time password (OTP) for 2FA.
+	 * @returns {Promise<AccountTokenResponse>} A promise resolving to the token response.
+	 */
 	static async getToken(server: string, username: string, authenticationHash: string, otp: string = ""): Promise<AccountTokenResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME);
@@ -185,6 +258,12 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Fetches and sets an authentication token using the current instance's details.
+	 *
+	 * @param {string} [otp=""] - An optional one-time password (OTP) for 2FA.
+	 * @returns {Promise<AccountTokenResponse>} A promise resolving to the token response.
+	 */
 	async getToken(otp: string = ""): Promise<AccountTokenResponse> {
 		if (!this.authenticationHash) return Errors.getJson(Error.INVALID_HASH);
 		const res = await PasskyAPI.getToken(this.server, this.username, this.authenticationHash, otp);
@@ -192,6 +271,15 @@ class PasskyAPI {
 		return res;
 	}
 
+	/**
+	 * Fetches the user's passwords from the server.
+	 *
+	 * @static
+	 * @param {string} server - The URL of the server.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} token - The authentication token.
+	 * @returns {Promise<AccountPasswordsResponse>} A promise resolving to the response containing the passwords.
+	 */
 	static async getPasswords(server: string, username: string, token: string): Promise<AccountPasswordsResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME);
@@ -215,11 +303,27 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Fetches the user's passwords using the instance's server, username, and token.
+	 *
+	 * @returns {Promise<AccountPasswordsResponse>} A promise resolving to the response containing the passwords.
+	 */
 	async getPasswords(): Promise<AccountPasswordsResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		return await PasskyAPI.getPasswords(this.server, this.username, this.token);
 	}
 
+	/**
+	 * Saves a new password to the server.
+	 *
+	 * @static
+	 * @param {string} server - The URL of the server.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} token - The authentication token.
+	 * @param {string} encryptionHash - The hash used for encrypting password data.
+	 * @param {PasswordData} passwordData - The password data to save.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	static async savePassword(server: string, username: string, token: string, encryptionHash: string, passwordData: PasswordData): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME);
@@ -266,12 +370,29 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Saves a new password using the instance's server, username, token, and encryption hash.
+	 *
+	 * @param {PasswordData} passwordData - The password data to save.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	async savePassword(passwordData: PasswordData): Promise<StandardResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		if (!this.encryptionHash) return Errors.getJson(Error.INVALID_HASH);
 		return await PasskyAPI.savePassword(this.server, this.username, this.token, this.encryptionHash, passwordData);
 	}
 
+	/**
+	 * Edits an existing password on the server.
+	 *
+	 * @static
+	 * @param {string} server - The URL of the server.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} token - The authentication token.
+	 * @param {string} encryptionHash - The hash used for encrypting password data.
+	 * @param {Password} passwordData - The updated password data.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	static async editPassword(server: string, username: string, token: string, encryptionHash: string, passwordData: Password): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME);
@@ -320,12 +441,28 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Edits an existing password using the instance's server, username, token, and encryption hash.
+	 *
+	 * @param {Password} passwordData - The updated password data.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	async editPassword(passwordData: Password): Promise<StandardResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		if (!this.encryptionHash) return Errors.getJson(Error.INVALID_HASH);
 		return await PasskyAPI.editPassword(this.server, this.username, this.token, this.encryptionHash, passwordData);
 	}
 
+	/**
+	 * Deletes a specific password from the server.
+	 *
+	 * @static
+	 * @param {string} server - The URL of the server.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} token - The authentication token.
+	 * @param {string | number} passwordID - The ID of the password to delete.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	static async deletePassword(server: string, username: string, token: string, passwordID: string | number) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -354,11 +491,26 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Deletes a specific password using the instance's server, username, and token.
+	 *
+	 * @param {string | number} passwordID - The ID of the password to delete.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	async deletePassword(passwordID: string | number): Promise<StandardResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		return await PasskyAPI.deletePassword(this.server, this.username, this.token, passwordID);
 	}
 
+	/**
+	 * Deletes all passwords for the user on the server.
+	 *
+	 * @static
+	 * @param {string} server - The URL of the server.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} token - The authentication token.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	static async deletePasswords(server: string, username: string, token: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -382,11 +534,23 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Deletes all passwords for the user using the instance's server, username, and token.
+	 *
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	async deletePasswords(): Promise<StandardResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		return await PasskyAPI.deletePasswords(this.server, this.username, this.token);
 	}
 
+	/**
+	 * Deletes the user's account from the server.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @returns {Promise<StandardResponse>} - A promise resolving to the server's response.
+	 */
 	static async deleteAccount(server: string, username: string, token: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -410,11 +574,22 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Deletes the current user's account.
+	 * @returns {Promise<StandardResponse>} - A promise resolving to the server's response.
+	 */
 	async deleteAccount(): Promise<StandardResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		return await PasskyAPI.deleteAccount(this.server, this.username, this.token);
 	}
 
+	/**
+	 * Enables two-factor authentication for the user's account.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @returns {Promise<AccountEnable2FaResponse>} - A promise resolving to the server's response.
+	 */
 	static async enable2FA(server: string, username: string, token: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -438,11 +613,22 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Enables two-factor authentication for the current user.
+	 * @returns {Promise<AccountEnable2FaResponse>} - A promise resolving to the server's response.
+	 */
 	async enable2FA(): Promise<AccountEnable2FaResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		return await PasskyAPI.enable2FA(this.server, this.username, this.token);
 	}
 
+	/**
+	 * Disables two-factor authentication for the user's account.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @returns {Promise<StandardResponse>} - A promise resolving to the server's response.
+	 */
 	static async disable2FA(server: string, username: string, token: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -466,11 +652,23 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Disables two-factor authentication for the current user.
+	 * @returns {Promise<StandardResponse>} - A promise resolving to the server's response.
+	 */
 	async disable2FA(): Promise<StandardResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		return await PasskyAPI.disable2FA(this.server, this.username, this.token);
 	}
 
+	/**
+	 * Adds a YubiKey to the user's account.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @param {string} yubiKeyOTP - The one-time password generated by the YubiKey.
+	 * @returns {Promise<AccountAddYubiKeyResponse>} - A promise resolving to the server's response.
+	 */
 	static async addYubiKey(server: string, username: string, token: string, yubiKeyOTP: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -499,11 +697,24 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Adds a YubiKey to the current user's account.
+	 * @param {string} yubiKeyOTP - The one-time password generated by the YubiKey.
+	 * @returns {Promise<AccountAddYubiKeyResponse>} - A promise resolving to the server's response.
+	 */
 	async addYubiKey(yubiKeyOTP: string): Promise<AccountAddYubiKeyResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		return await PasskyAPI.addYubiKey(this.server, this.username, this.token, yubiKeyOTP);
 	}
 
+	/**
+	 * Removes a YubiKey from the user's account.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @param {string} yubiKeyOTP - The YubiKey OTP to remove.
+	 * @returns {Promise<AccountRemoveYubiKeyResponse>} The response from the server.
+	 */
 	static async removeYubiKey(server: string, username: string, token: string, yubiKeyOTP: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -532,11 +743,22 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Removes a YubiKey from the current account.
+	 * @param {string} yubiKeyOTP - The YubiKey OTP to remove.
+	 * @returns {Promise<AccountRemoveYubiKeyResponse>} The response from the server.
+	 */
 	async removeYubiKey(yubiKeyOTP: string): Promise<AccountRemoveYubiKeyResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		return await PasskyAPI.removeYubiKey(this.server, this.username, this.token, yubiKeyOTP);
 	}
 
+	/**
+	 * Sends the username associated with a provided email.
+	 * @param {string} server - The server URL.
+	 * @param {string} email - The user's email address.
+	 * @returns {Promise<StandardResponse>} The response from the server.
+	 */
 	static async forgotUsername(server: string, email: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.email(email)) return Errors.getJson(Error.INVALID_EMAIL);
@@ -559,6 +781,14 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Upgrades the user's account using a license key.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @param {string} license - The license key for upgrading the account.
+	 * @returns {Promise<AccountUpgradeResponse>} The response from the server.
+	 */
 	static async upgradeAccount(server: string, username: string, token: string, license: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
@@ -587,11 +817,25 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Upgrades the current account using a license key.
+	 * @param {string} license - The license key for upgrading the account.
+	 * @returns {Promise<AccountUpgradeResponse>} The response from the server.
+	 */
 	async upgradeAccount(license: string): Promise<AccountUpgradeResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		return await PasskyAPI.upgradeAccount(this.server, this.username, this.token, license);
 	}
 
+	/**
+	 * Imports a list of passwords to the user's account.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @param {string} encryptionHash - The encryption hash for securing the passwords.
+	 * @param {PasswordData[]} passwords - The list of passwords to import.
+	 * @returns {Promise<AccountImportPasswords>} The response from the server.
+	 */
 	static async importPasswords(
 		server: string,
 		username: string,
@@ -646,6 +890,11 @@ class PasskyAPI {
 		}
 	}
 
+	/**
+	 * Imports a list of passwords to the current account.
+	 * @param {PasswordData[]} passwords - The list of passwords to import.
+	 * @returns {Promise<AccountImportPasswords>} The response from the server.
+	 */
 	async importPasswords(passwords: PasswordData[]): Promise<AccountImportPasswords> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		if (!this.encryptionHash) return Errors.getJson(Error.INVALID_HASH);
