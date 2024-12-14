@@ -11,6 +11,13 @@ let moduleBuild = await Bun.build({
 	outdir: "./module",
 	target: "browser",
 	format: "esm",
+	minify: true,
+	banner: `/**
+*
+*	PasskyAPI-JS 8.1.0
+* https://github.com/Rabbit-Company/PasskyAPI-JS
+*
+*/`,
 	plugins: [dts({ output: { noBanner: true } })],
 });
 

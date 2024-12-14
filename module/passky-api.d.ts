@@ -1,11 +1,21 @@
+import Argon2id from '@rabbit-company/argon2id';
+import Blake2b from '@rabbit-company/blake2b';
 import XChaCha20 from '@rabbit-company/xchacha20';
 
+/**
+ * Represents data related to a stored password.
+ * @interface
+ */
 export interface PasswordData {
 	website: string;
 	username: string;
 	password: string;
 	message: string;
 }
+/**
+ * Represents a password entry with a unique ID.
+ * @interface
+ */
 export interface Password {
 	id: number;
 	website: string;
@@ -33,17 +43,28 @@ export interface StandardResponse {
 	/** A descriptive message providing more information about the response. */
 	info: string;
 }
+/**
+ * Represents a response containing server information.
+ * @typedef
+ */
 export type ServerInfoResponse = {
 	/** Indicates a successful operation with Error.SUCCESS. */
 	error: Error$1.SUCCESS;
 	/** A descriptive message providing details about the success. */
 	info: string;
+	/** The current server version. */
 	version: string;
+	/** The server location. */
 	location: string;
+	/** The number of registered users. */
 	users: number;
+	/** The maximum allowed number of users. */
 	maxUsers: number;
+	/** The number of stored passwords. */
 	passwords: number;
+	/** The maximum allowed number of passwords. */
 	maxPasswords: number;
+	/** The hashing cost factor. */
 	hashingCost: number;
 } | {
 	/** Indicates an error occurred with an Error value other than SUCCESS. */
@@ -51,16 +72,26 @@ export type ServerInfoResponse = {
 	/** A descriptive message providing details about the error. */
 	info: string;
 };
+/**
+ * Represents a response containing server resource statistics.
+ * @typedef
+ */
 export type ServerStatsResponse = {
 	/** Indicates a successful operation with Error.SUCCESS. */
 	error: Error$1.SUCCESS;
 	/** A descriptive message providing details about the success. */
 	info: string;
+	/** The CPU usage percentage. */
 	cpu: number;
+	/** The number of CPU cores available. */
 	cores: number;
+	/** The memory usage in bytes. */
 	memoryUsed: number;
+	/** The total memory available in bytes. */
 	memoryTotal: number;
+	/** The disk usage in bytes. */
 	diskUsed: number;
+	/** The total disk space available in bytes. */
 	diskTotal: number;
 } | {
 	/** Indicates an error occurred with an Error value other than SUCCESS. */
@@ -68,14 +99,22 @@ export type ServerStatsResponse = {
 	/** A descriptive message providing details about the error. */
 	info: string;
 };
+/**
+ * Represents a response containing server activity reports.
+ * @typedef
+ */
 export type ServerReportResponse = {
 	/** Indicates a successful operation with Error.SUCCESS. */
 	error: Error$1.SUCCESS;
 	/** A descriptive message providing details about the success. */
 	info: string;
+	/** The number of active users on the server. */
 	activeUsers: number;
+	/** A list of report results containing date and newcomer information. */
 	results: {
+		/** The date of the report entry. */
 		date: string;
+		/** The number of newcomers on the given date. */
 		newcomers: number;
 	}[];
 } | {
@@ -84,16 +123,26 @@ export type ServerReportResponse = {
 	/** A descriptive message providing details about the error. */
 	info: string;
 };
+/**
+ * Represents a response containing account token and related information.
+ * @typedef
+ */
 export type AccountTokenResponse = {
 	/** Indicates a successful operation with Error.SUCCESS. */
 	error: Error$1.SUCCESS | Error$1.NO_SAVED_PASSWORDS;
 	/** A descriptive message providing details about the success. */
 	info: string;
+	/** The account token. */
 	token: string;
+	/** Indicates whether the account has 2FA enabled. */
 	auth: boolean;
+	/** The Yubico keys associated with the account. */
 	yubico: string;
+	/** The maximum number of passwords allowed. */
 	max_passwords: number;
+	/** The timestamp for premium expiry. */
 	premium_expires: number;
+	/** A list of stored passwords. */
 	passwords: Password[];
 } | {
 	/** Indicates an error occurred with an Error value other than SUCCESS. */
@@ -101,11 +150,16 @@ export type AccountTokenResponse = {
 	/** A descriptive message providing details about the error. */
 	info: string;
 };
+/**
+ * Represents a response containing account passwords.
+ * @typedef
+ */
 export type AccountPasswordsResponse = {
 	/** Indicates a successful operation with Error.SUCCESS. */
 	error: Error$1.SUCCESS | Error$1.NO_SAVED_PASSWORDS;
 	/** A descriptive message providing details about the success. */
 	info: string;
+	/** A list of stored passwords. */
 	passwords: Password[];
 } | {
 	/** Indicates an error occurred with an Error value other than SUCCESS. */
@@ -118,8 +172,11 @@ export type AccountEnable2FaResponse = {
 	error: Error$1.SUCCESS;
 	/** A descriptive message providing details about the success. */
 	info: string;
+	/** The secret key for 2FA. */
 	secret: string;
+	/** The QR code for setting up 2FA. */
 	qrcode: string;
+	/** Backup codes for 2FA. */
 	codes: string;
 } | {
 	/** Indicates an error occurred with an Error value other than SUCCESS. */
@@ -132,7 +189,9 @@ export type AccountAddYubiKeyResponse = {
 	error: Error$1.SUCCESS;
 	/** A descriptive message providing details about the success. */
 	info: string;
+	/** The Yubico keys associated with the account. */
 	yubico: string;
+	/** Backup codes for 2FA. */
 	codes: string;
 } | {
 	/** Indicates an error occurred with an Error value other than SUCCESS. */
@@ -145,6 +204,7 @@ export type AccountRemoveYubiKeyResponse = {
 	error: Error$1.SUCCESS;
 	/** A descriptive message providing more information about the response. */
 	info: string;
+	/** The Yubico keys associated with the account. */
 	yubico: string;
 } | {
 	/** The error code associated with the response. */
@@ -157,7 +217,9 @@ export type AccountUpgradeResponse = {
 	error: Error$1.SUCCESS;
 	/** A descriptive message providing more information about the response. */
 	info: string;
+	/** The maximum number of passwords allowed after the upgrade. */
 	max_passwords: number;
+	/** The premium expiry date as a string. */
 	premium_expires: string;
 } | {
 	/** The error code associated with the response. */
@@ -170,7 +232,9 @@ export type AccountImportPasswords = {
 	error: Error$1.SUCCESS;
 	/** A descriptive message providing more information about the response. */
 	info: string;
+	/** The number of passwords successfully imported. */
 	import_success: number;
+	/** The number of passwords that failed to import. */
 	import_error: number;
 } | {
 	/** The error code associated with the response. */
@@ -439,38 +503,296 @@ export declare class PasskyAPI {
 	 * @param {string} password - The master password for authentication.
 	 */
 	constructor(server: string, username: string, password: string);
+	/**
+	 * Generates an authentication hash for a given username and password.
+	 *
+	 * @static
+	 * @param {string} username - The username to generate the hash for.
+	 * @param {string} password - The password to generate the hash for.
+	 * @returns {Promise<string | null>} A promise resolving to the authentication hash, or null if an error occurs.
+	 */
 	static generateAuthenticationHash(username: string, password: string): Promise<string | null>;
+	/**
+	 * Generates and sets the authentication hash for the current instance.
+	 *
+	 * @returns {Promise<string | null>} A promise resolving to the generated authentication hash, or null if an error occurs.
+	 */
 	generateAuthenticationHash(): Promise<string | null>;
+	/**
+	 * Generates an encryption hash for a given username and password.
+	 *
+	 * @static
+	 * @param {string} username - The username to generate the hash for.
+	 * @param {string} password - The password to generate the hash for.
+	 * @returns {Promise<string | null>} A promise resolving to the encryption hash, or null if an error occurs.
+	 */
 	static generateEncryptionHash(username: string, password: string): Promise<string | null>;
+	/**
+	 * Generates and sets the encryption hash for the current instance.
+	 *
+	 * @returns {Promise<string | null>} A promise resolving to the generated encryption hash, or null if an error occurs.
+	 */
 	generateEncryptionHash(): Promise<string | null>;
+	/**
+	 * Fetches server information from the specified server URL.
+	 *
+	 * @static
+	 * @param {string} server - The server URL to fetch the information from.
+	 * @returns {Promise<ServerInfoResponse>} A promise resolving to the server information response.
+	 */
 	static getInfo(server: string): Promise<ServerInfoResponse>;
+	/**
+	 * Fetches server statistics from the specified server URL.
+	 *
+	 * @static
+	 * @param {string} server - The server URL to fetch the statistics from.
+	 * @returns {Promise<ServerStatsResponse>} A promise resolving to the server statistics response.
+	 */
 	static getStats(server: string): Promise<ServerStatsResponse>;
+	/**
+	 * Fetches a server activity report from the specified server URL.
+	 *
+	 * @static
+	 * @param {string} server - The server URL to fetch the report from.
+	 * @returns {Promise<ServerReportResponse>} A promise resolving to the server activity report response.
+	 */
 	static getReport(server: string): Promise<ServerReportResponse>;
+	/**
+	 * Creates a new account on the specified server.
+	 *
+	 * @static
+	 * @param {string} server - The server URL where the account should be created.
+	 * @param {string} username - The username for the new account.
+	 * @param {string} authenticationHash - The hash generated for authentication.
+	 * @param {string} email - The email address for the new account.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response of the account creation operation.
+	 */
 	static createAccount(server: string, username: string, authenticationHash: string, email: string): Promise<StandardResponse>;
+	/**
+	 * Creates a new account using the current instance's details.
+	 *
+	 * @param {string} email - The email address for the new account.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response of the account creation operation.
+	 */
+	createAccount(email: string): Promise<StandardResponse>;
+	/**
+	 * Fetches an authentication token from the specified server.
+	 *
+	 * @static
+	 * @param {string} server - The server URL to fetch the token from.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} authenticationHash - The hash generated for authentication.
+	 * @param {string} [otp=""] - An optional one-time password (OTP) for 2FA.
+	 * @returns {Promise<AccountTokenResponse>} A promise resolving to the token response.
+	 */
 	static getToken(server: string, username: string, authenticationHash: string, otp?: string): Promise<AccountTokenResponse>;
+	/**
+	 * Fetches and sets an authentication token using the current instance's details.
+	 *
+	 * @param {string} [otp=""] - An optional one-time password (OTP) for 2FA.
+	 * @returns {Promise<AccountTokenResponse>} A promise resolving to the token response.
+	 */
 	getToken(otp?: string): Promise<AccountTokenResponse>;
+	/**
+	 * Fetches the user's passwords from the server.
+	 *
+	 * @static
+	 * @param {string} server - The URL of the server.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} token - The authentication token.
+	 * @returns {Promise<AccountPasswordsResponse>} A promise resolving to the response containing the passwords.
+	 */
 	static getPasswords(server: string, username: string, token: string): Promise<AccountPasswordsResponse>;
+	/**
+	 * Fetches the user's passwords using the instance's server, username, and token.
+	 *
+	 * @returns {Promise<AccountPasswordsResponse>} A promise resolving to the response containing the passwords.
+	 */
 	getPasswords(): Promise<AccountPasswordsResponse>;
+	/**
+	 * Saves a new password to the server.
+	 *
+	 * @static
+	 * @param {string} server - The URL of the server.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} token - The authentication token.
+	 * @param {string} encryptionHash - The hash used for encrypting password data.
+	 * @param {PasswordData} passwordData - The password data to save.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	static savePassword(server: string, username: string, token: string, encryptionHash: string, passwordData: PasswordData): Promise<StandardResponse>;
+	/**
+	 * Saves a new password using the instance's server, username, token, and encryption hash.
+	 *
+	 * @param {PasswordData} passwordData - The password data to save.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	savePassword(passwordData: PasswordData): Promise<StandardResponse>;
+	/**
+	 * Edits an existing password on the server.
+	 *
+	 * @static
+	 * @param {string} server - The URL of the server.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} token - The authentication token.
+	 * @param {string} encryptionHash - The hash used for encrypting password data.
+	 * @param {Password} passwordData - The updated password data.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	static editPassword(server: string, username: string, token: string, encryptionHash: string, passwordData: Password): Promise<StandardResponse>;
+	/**
+	 * Edits an existing password using the instance's server, username, token, and encryption hash.
+	 *
+	 * @param {Password} passwordData - The updated password data.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	editPassword(passwordData: Password): Promise<StandardResponse>;
+	/**
+	 * Deletes a specific password from the server.
+	 *
+	 * @static
+	 * @param {string} server - The URL of the server.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} token - The authentication token.
+	 * @param {string | number} passwordID - The ID of the password to delete.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	static deletePassword(server: string, username: string, token: string, passwordID: string | number): Promise<StandardResponse>;
+	/**
+	 * Deletes a specific password using the instance's server, username, and token.
+	 *
+	 * @param {string | number} passwordID - The ID of the password to delete.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	deletePassword(passwordID: string | number): Promise<StandardResponse>;
+	/**
+	 * Deletes all passwords for the user on the server.
+	 *
+	 * @static
+	 * @param {string} server - The URL of the server.
+	 * @param {string} username - The username for authentication.
+	 * @param {string} token - The authentication token.
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	static deletePasswords(server: string, username: string, token: string): Promise<StandardResponse>;
+	/**
+	 * Deletes all passwords for the user using the instance's server, username, and token.
+	 *
+	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
+	 */
 	deletePasswords(): Promise<StandardResponse>;
+	/**
+	 * Deletes the user's account from the server.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @returns {Promise<StandardResponse>} - A promise resolving to the server's response.
+	 */
 	static deleteAccount(server: string, username: string, token: string): Promise<StandardResponse>;
+	/**
+	 * Deletes the current user's account.
+	 * @returns {Promise<StandardResponse>} - A promise resolving to the server's response.
+	 */
 	deleteAccount(): Promise<StandardResponse>;
+	/**
+	 * Enables two-factor authentication for the user's account.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @returns {Promise<AccountEnable2FaResponse>} - A promise resolving to the server's response.
+	 */
 	static enable2FA(server: string, username: string, token: string): Promise<AccountEnable2FaResponse>;
+	/**
+	 * Enables two-factor authentication for the current user.
+	 * @returns {Promise<AccountEnable2FaResponse>} - A promise resolving to the server's response.
+	 */
+	enable2FA(): Promise<AccountEnable2FaResponse>;
+	/**
+	 * Disables two-factor authentication for the user's account.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @returns {Promise<StandardResponse>} - A promise resolving to the server's response.
+	 */
 	static disable2FA(server: string, username: string, token: string): Promise<StandardResponse>;
+	/**
+	 * Disables two-factor authentication for the current user.
+	 * @returns {Promise<StandardResponse>} - A promise resolving to the server's response.
+	 */
+	disable2FA(): Promise<StandardResponse>;
+	/**
+	 * Adds a YubiKey to the user's account.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @param {string} yubiKeyOTP - The one-time password generated by the YubiKey.
+	 * @returns {Promise<AccountAddYubiKeyResponse>} - A promise resolving to the server's response.
+	 */
 	static addYubiKey(server: string, username: string, token: string, yubiKeyOTP: string): Promise<AccountAddYubiKeyResponse>;
+	/**
+	 * Adds a YubiKey to the current user's account.
+	 * @param {string} yubiKeyOTP - The one-time password generated by the YubiKey.
+	 * @returns {Promise<AccountAddYubiKeyResponse>} - A promise resolving to the server's response.
+	 */
+	addYubiKey(yubiKeyOTP: string): Promise<AccountAddYubiKeyResponse>;
+	/**
+	 * Removes a YubiKey from the user's account.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @param {string} yubiKeyOTP - The YubiKey OTP to remove.
+	 * @returns {Promise<AccountRemoveYubiKeyResponse>} The response from the server.
+	 */
 	static removeYubiKey(server: string, username: string, token: string, yubiKeyOTP: string): Promise<AccountRemoveYubiKeyResponse>;
+	/**
+	 * Removes a YubiKey from the current account.
+	 * @param {string} yubiKeyOTP - The YubiKey OTP to remove.
+	 * @returns {Promise<AccountRemoveYubiKeyResponse>} The response from the server.
+	 */
+	removeYubiKey(yubiKeyOTP: string): Promise<AccountRemoveYubiKeyResponse>;
+	/**
+	 * Sends the username associated with a provided email.
+	 * @param {string} server - The server URL.
+	 * @param {string} email - The user's email address.
+	 * @returns {Promise<StandardResponse>} The response from the server.
+	 */
 	static forgotUsername(server: string, email: string): Promise<StandardResponse>;
+	/**
+	 * Upgrades the user's account using a license key.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @param {string} license - The license key for upgrading the account.
+	 * @returns {Promise<AccountUpgradeResponse>} The response from the server.
+	 */
 	static upgradeAccount(server: string, username: string, token: string, license: string): Promise<AccountUpgradeResponse>;
+	/**
+	 * Upgrades the current account using a license key.
+	 * @param {string} license - The license key for upgrading the account.
+	 * @returns {Promise<AccountUpgradeResponse>} The response from the server.
+	 */
+	upgradeAccount(license: string): Promise<AccountUpgradeResponse>;
+	/**
+	 * Imports a list of passwords to the user's account.
+	 * @param {string} server - The server URL.
+	 * @param {string} username - The user's username.
+	 * @param {string} token - The user's authentication token.
+	 * @param {string} encryptionHash - The encryption hash for securing the passwords.
+	 * @param {PasswordData[]} passwords - The list of passwords to import.
+	 * @returns {Promise<AccountImportPasswords>} The response from the server.
+	 */
 	static importPasswords(server: string, username: string, token: string, encryptionHash: string, passwords: PasswordData[]): Promise<AccountImportPasswords>;
+	/**
+	 * Imports a list of passwords to the current account.
+	 * @param {PasswordData[]} passwords - The list of passwords to import.
+	 * @returns {Promise<AccountImportPasswords>} The response from the server.
+	 */
+	importPasswords(passwords: PasswordData[]): Promise<AccountImportPasswords>;
 }
 
 export {
+	Argon2id,
+	Blake2b,
 	Error$1 as Error,
 	XChaCha20,
 };
