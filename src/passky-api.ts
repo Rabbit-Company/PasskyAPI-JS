@@ -184,7 +184,7 @@ class PasskyAPI {
 	static async createAccount(server: string, username: string, authenticationHash: string, email: string): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.email(email)) return Errors.getJson(Error.INVALID_EMAIL);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.hash(authenticationHash)) return Errors.getJson(Error.INVALID_HASH);
 
 		try {
@@ -232,7 +232,7 @@ class PasskyAPI {
 	 */
 	static async getToken(server: string, username: string, authenticationHash: string, otp: string = ""): Promise<AccountTokenResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME);
 		if (!Validate.hash(authenticationHash)) return Errors.getJson(Error.INVALID_HASH);
 		if (!Validate.otp(otp)) return Errors.getJson(Error.INVALID_OTP);
 
@@ -282,7 +282,7 @@ class PasskyAPI {
 	 */
 	static async getPasswords(server: string, username: string, token: string): Promise<AccountPasswordsResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 
 		try {
@@ -326,14 +326,14 @@ class PasskyAPI {
 	 */
 	static async savePassword(server: string, username: string, token: string, encryptionHash: string, passwordData: PasswordData): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		if (!Validate.hash(encryptionHash)) return Errors.getJson(Error.INVALID_HASH);
 
-		if (!Validate.passwordWebsite(passwordData.website)) return Errors.getJson(Error.WEBSITE_TOO_LONG);
-		if (!Validate.passwordUsername(passwordData.username)) return Errors.getJson(Error.USERNAME_TOO_LONG);
-		if (!Validate.passwordPassword(passwordData.password)) return Errors.getJson(Error.PASSWORD_TOO_LONG);
-		if (!Validate.passwordMessage(passwordData.message)) return Errors.getJson(Error.MESSAGE_TOO_LONG);
+		if (!Validate.website(passwordData.website)) return Errors.getJson(Error.WEBSITE_TOO_LONG);
+		if (!Validate.username(passwordData.username)) return Errors.getJson(Error.USERNAME_TOO_LONG);
+		if (!Validate.password(passwordData.password)) return Errors.getJson(Error.PASSWORD_TOO_LONG);
+		if (!Validate.message(passwordData.message)) return Errors.getJson(Error.MESSAGE_TOO_LONG);
 
 		passwordData.website = XChaCha20.encrypt(passwordData.website, encryptionHash);
 		passwordData.username = XChaCha20.encrypt(passwordData.username, encryptionHash);
@@ -395,15 +395,15 @@ class PasskyAPI {
 	 */
 	static async editPassword(server: string, username: string, token: string, encryptionHash: string, passwordData: Password): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		if (!Validate.hash(encryptionHash)) return Errors.getJson(Error.INVALID_HASH);
 
 		if (!Validate.positiveInteger(passwordData.id)) return Errors.getJson(Error.PASSWORD_NOT_OWNED_BY_USER);
-		if (!Validate.passwordWebsite(passwordData.website)) return Errors.getJson(Error.WEBSITE_TOO_LONG);
-		if (!Validate.passwordUsername(passwordData.username)) return Errors.getJson(Error.USERNAME_TOO_LONG);
-		if (!Validate.passwordPassword(passwordData.password)) return Errors.getJson(Error.PASSWORD_TOO_LONG);
-		if (!Validate.passwordMessage(passwordData.message)) return Errors.getJson(Error.MESSAGE_TOO_LONG);
+		if (!Validate.website(passwordData.website)) return Errors.getJson(Error.WEBSITE_TOO_LONG);
+		if (!Validate.username(passwordData.username)) return Errors.getJson(Error.USERNAME_TOO_LONG);
+		if (!Validate.password(passwordData.password)) return Errors.getJson(Error.PASSWORD_TOO_LONG);
+		if (!Validate.message(passwordData.message)) return Errors.getJson(Error.MESSAGE_TOO_LONG);
 
 		passwordData.website = XChaCha20.encrypt(passwordData.website, encryptionHash);
 		passwordData.username = XChaCha20.encrypt(passwordData.username, encryptionHash);
@@ -465,7 +465,7 @@ class PasskyAPI {
 	 */
 	static async deletePassword(server: string, username: string, token: string, passwordID: string | number) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		if (!Validate.positiveInteger(passwordID)) return Errors.getJson(Error.PASSWORD_NOT_OWNED_BY_USER);
 
@@ -513,7 +513,7 @@ class PasskyAPI {
 	 */
 	static async deletePasswords(server: string, username: string, token: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 
 		try {
@@ -553,7 +553,7 @@ class PasskyAPI {
 	 */
 	static async deleteAccount(server: string, username: string, token: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 
 		try {
@@ -592,7 +592,7 @@ class PasskyAPI {
 	 */
 	static async enable2FA(server: string, username: string, token: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 
 		try {
@@ -631,7 +631,7 @@ class PasskyAPI {
 	 */
 	static async disable2FA(server: string, username: string, token: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 
 		try {
@@ -671,7 +671,7 @@ class PasskyAPI {
 	 */
 	static async addYubiKey(server: string, username: string, token: string, yubiKeyOTP: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		if (!Validate.yubiKey(yubiKeyOTP)) return Errors.getJson(Error.INVALID_YUBIKEY_OTP);
 
@@ -717,7 +717,7 @@ class PasskyAPI {
 	 */
 	static async removeYubiKey(server: string, username: string, token: string, yubiKeyOTP: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		if (!Validate.yubiKey(yubiKeyOTP)) return Errors.getJson(Error.INVALID_YUBIKEY_OTP);
 
@@ -791,7 +791,7 @@ class PasskyAPI {
 	 */
 	static async upgradeAccount(server: string, username: string, token: string, license: string) {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		if (!Validate.license(license)) return Errors.getJson(Error.INVALID_LICENSE_KEY);
 
@@ -844,7 +844,7 @@ class PasskyAPI {
 		passwords: PasswordData[]
 	): Promise<AccountImportPasswords> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
-		if (!Validate.username(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
+		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
 		if (!Validate.hash(encryptionHash)) return Errors.getJson(Error.INVALID_HASH);
 

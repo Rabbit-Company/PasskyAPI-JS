@@ -378,24 +378,24 @@ export declare namespace Errors {
  */
 export declare namespace Validate {
 	/**
-	 * Validates a username based on specific rules.
-	 * A valid username:
+	 * Validates master username based on specific rules.
+	 * A valid master username:
 	 * - Can contain lowercase letters, numbers, periods (.), and underscores (_).
 	 * - Must be between 6 and 30 characters long.
 	 *
 	 * @param {string} username - The username to validate.
 	 * @returns {boolean} True if the username is valid, otherwise false.
 	 */
-	function username(username: string): boolean;
+	function masterUsername(username: string): boolean;
 	/**
-	 * Validates a password.
-	 * A valid password:
+	 * Validates master password.
+	 * A valid master password:
 	 * - Must be at least 8 characters long.
 	 *
 	 * @param {string} password - The password to validate.
 	 * @returns {boolean} True if the password is valid, otherwise false.
 	 */
-	function password(password: string): boolean;
+	function masterPassword(password: string): boolean;
 	/**
 	 * Validates a hash.
 	 * A valid hash:
@@ -438,10 +438,42 @@ export declare namespace Validate {
 	 * @returns {boolean} True if the token is valid, otherwise false.
 	 */
 	function token(token: string): boolean;
-	function passwordWebsite(website: string): boolean;
-	function passwordUsername(username: string): boolean;
-	function passwordPassword(password: string): boolean;
-	function passwordMessage(message: string): boolean;
+	/**
+	 * Validates a website name or URL for storing login credentials.
+	 * A valid website:
+	 * - Must be between 2 and 100 characters long.
+	 *
+	 * @param {string} website - The website to validate.
+	 * @returns {boolean} True if the website is valid, otherwise false.
+	 */
+	function website(website: string): boolean;
+	/**
+	 * Validates a username for storing login credentials.
+	 * A valid username:
+	 * - Must be between 2 and 100 characters long.
+	 *
+	 * @param {string} username - The username to validate.
+	 * @returns {boolean} True if the username is valid, otherwise false.
+	 */
+	function username(username: string): boolean;
+	/**
+	 * Validates a password for storing login credentials.
+	 * A valid password:
+	 * - Must be between 2 and 100 characters long.
+	 *
+	 * @param {string} password - The password to validate.
+	 * @returns {boolean} True if the password is valid, otherwise false.
+	 */
+	function password(password: string): boolean;
+	/**
+	 * Validates a message for storing login credentials.
+	 * A valid message:
+	 * - Must be between 0 and 5000 characters long.
+	 *
+	 * @param {string} message - The message to validate.
+	 * @returns {boolean} True if the message is valid, otherwise false.
+	 */
+	function message(message: string): boolean;
 	/**
 	 * Validates if a value is a positive integer.
 	 *
