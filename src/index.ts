@@ -40,6 +40,23 @@ document.getElementById("btn-get-token")?.addEventListener("click", async () => 
 	}
 });
 
+document.getElementById("btn-delete-account")?.addEventListener("click", async () => {
+	latency = Date.now();
+	const res = await account.deleteAccount();
+	printResponse(res);
+
+	if (res.error === 0) {
+		if (loginPage) loginPage.style.display = "block";
+		if (loggedInPage) loggedInPage.style.display = "none";
+	}
+});
+
+document.getElementById("btn-delete-passwords")?.addEventListener("click", async () => {
+	latency = Date.now();
+	const res = await account.deletePasswords();
+	printResponse(res);
+});
+
 function printResponse(response: StandardResponse) {
 	if (!responses) return;
 
