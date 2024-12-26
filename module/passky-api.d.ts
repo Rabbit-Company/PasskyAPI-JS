@@ -566,6 +566,40 @@ export declare class PasskyAPI {
 	 */
 	generateEncryptionHash(): Promise<string | null>;
 	/**
+	 * Decrypts a single encrypted password object using the provided encryption hash.
+	 *
+	 * @static
+	 * @param {Password} passwordData - The encrypted password object.
+	 * @param {string} encryptionHash - The encryption hash used to decrypt the password fields.
+	 * @returns {Password} The decrypted password object.
+	 */
+	static decryptPassword(passwordData: Password, encryptionHash: string): Password;
+	/**
+	 * Decrypts a single encrypted password object using the class's encryption hash.
+	 * Returns `null` if the encryption hash is not set.
+	 *
+	 * @param {Password} passwordData - The encrypted password object to decrypt.
+	 * @returns {Password | null} The decrypted password object, or `null` if the encryption hash is not available.
+	 */
+	decryptPassword(passwordData: Password): Password | null;
+	/**
+	 * Decrypts an array of encrypted passwords using the provided encryption hash.
+	 *
+	 * @static
+	 * @param {Password[]} passwords - The array of encrypted password objects.
+	 * @param {string} encryptionHash - The encryption hash used to decrypt the password fields.
+	 * @returns {Password[]} The array of decrypted password objects.
+	 */
+	static decryptPasswords(passwords: Password[], encryptionHash: string): Password[];
+	/**
+	 * Decrypts an array of encrypted password objects using the class's encryption hash.
+	 * Returns `null` if the encryption hash is not set.
+	 *
+	 * @param {Password[]} passwords - The array of encrypted password objects to decrypt.
+	 * @returns {Password[] | null} The array of decrypted password objects, or `null` if the encryption hash is not available.
+	 */
+	decryptPasswords(passwords: Password[]): Password[] | null;
+	/**
 	 * Fetches server information from the specified server URL.
 	 *
 	 * @static
@@ -614,11 +648,10 @@ export declare class PasskyAPI {
 	 * @param {string} server - The server URL to fetch the token from.
 	 * @param {string} username - The username for authentication.
 	 * @param {string} authenticationHash - The hash generated for authentication.
-	 * @param {string | null} encryptionHash - The hash used for password decryption.
 	 * @param {string} [otp=""] - An optional one-time password (OTP) for 2FA.
 	 * @returns {Promise<AccountTokenResponse>} A promise resolving to the token response.
 	 */
-	static getToken(server: string, username: string, authenticationHash: string, encryptionHash: string | null, otp?: string): Promise<AccountTokenResponse>;
+	static getToken(server: string, username: string, authenticationHash: string, otp?: string): Promise<AccountTokenResponse>;
 	/**
 	 * Fetches and sets an authentication token using the current instance's details.
 	 *
@@ -633,10 +666,9 @@ export declare class PasskyAPI {
 	 * @param {string} server - The URL of the server.
 	 * @param {string} username - The username for authentication.
 	 * @param {string} token - The authentication token.
-	 * @param {string | null} encryptionHash - The hash used for password decryption.
 	 * @returns {Promise<AccountPasswordsResponse>} A promise resolving to the response containing the passwords.
 	 */
-	static getPasswords(server: string, username: string, token: string, encryptionHash: string | null): Promise<AccountPasswordsResponse>;
+	static getPasswords(server: string, username: string, token: string): Promise<AccountPasswordsResponse>;
 	/**
 	 * Fetches the user's passwords using the instance's server, username, and token.
 	 *

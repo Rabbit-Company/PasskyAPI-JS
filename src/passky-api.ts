@@ -106,6 +106,72 @@ class PasskyAPI {
 	}
 
 	/**
+	 * Decrypts a single encrypted password object using the provided encryption hash.
+	 *
+	 * @static
+	 * @param {Password} passwordData - The encrypted password object.
+	 * @param {string} encryptionHash - The encryption hash used to decrypt the password fields.
+	 * @returns {Password} The decrypted password object.
+	 */
+	static decryptPassword(passwordData: Password, encryptionHash: string): Password {
+		return {
+			id: passwordData.id,
+			website: XChaCha20.decrypt(passwordData.website, encryptionHash),
+			username: XChaCha20.decrypt(passwordData.username, encryptionHash),
+			password: XChaCha20.decrypt(passwordData.password, encryptionHash),
+			message: XChaCha20.decrypt(passwordData.message, encryptionHash),
+		};
+	}
+
+	/**
+	 * Decrypts a single encrypted password object using the class's encryption hash.
+	 * Returns `null` if the encryption hash is not set.
+	 *
+	 * @param {Password} passwordData - The encrypted password object to decrypt.
+	 * @returns {Password | null} The decrypted password object, or `null` if the encryption hash is not available.
+	 */
+	decryptPassword(passwordData: Password): Password | null {
+		if (!this.encryptionHash) return null;
+		return PasskyAPI.decryptPassword(passwordData, this.encryptionHash);
+	}
+
+	/**
+	 * Decrypts an array of encrypted passwords using the provided encryption hash.
+	 *
+	 * @static
+	 * @param {Password[]} passwords - The array of encrypted password objects.
+	 * @param {string} encryptionHash - The encryption hash used to decrypt the password fields.
+	 * @returns {Password[]} The array of decrypted password objects.
+	 */
+	static decryptPasswords(passwords: Password[], encryptionHash: string): Password[] {
+		const decryptedPasswords: Password[] = [];
+
+		passwords.forEach((passwordData) => {
+			decryptedPasswords.push({
+				id: passwordData.id,
+				website: XChaCha20.decrypt(passwordData.website, encryptionHash),
+				username: XChaCha20.decrypt(passwordData.username, encryptionHash),
+				password: XChaCha20.decrypt(passwordData.password, encryptionHash),
+				message: XChaCha20.decrypt(passwordData.message, encryptionHash),
+			});
+		});
+
+		return decryptedPasswords;
+	}
+
+	/**
+	 * Decrypts an array of encrypted password objects using the class's encryption hash.
+	 * Returns `null` if the encryption hash is not set.
+	 *
+	 * @param {Password[]} passwords - The array of encrypted password objects to decrypt.
+	 * @returns {Password[] | null} The array of decrypted password objects, or `null` if the encryption hash is not available.
+	 */
+	decryptPasswords(passwords: Password[]): Password[] | null {
+		if (!this.encryptionHash) return null;
+		return PasskyAPI.decryptPasswords(passwords, this.encryptionHash);
+	}
+
+	/**
 	 * Fetches server information from the specified server URL.
 	 *
 	 * @static
@@ -227,21 +293,13 @@ class PasskyAPI {
 	 * @param {string} server - The server URL to fetch the token from.
 	 * @param {string} username - The username for authentication.
 	 * @param {string} authenticationHash - The hash generated for authentication.
-	 * @param {string | null} encryptionHash - The hash used for password decryption.
 	 * @param {string} [otp=""] - An optional one-time password (OTP) for 2FA.
 	 * @returns {Promise<AccountTokenResponse>} A promise resolving to the token response.
 	 */
-	static async getToken(
-		server: string,
-		username: string,
-		authenticationHash: string,
-		encryptionHash: string | null,
-		otp: string = ""
-	): Promise<AccountTokenResponse> {
+	static async getToken(server: string, username: string, authenticationHash: string, otp: string = ""): Promise<AccountTokenResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME);
 		if (!Validate.hash(authenticationHash)) return Errors.getJson(Error.INVALID_HASH);
-		if (encryptionHash && !Validate.hash(encryptionHash)) return Errors.getJson(Error.INVALID_HASH);
 		if (!Validate.otp(otp)) return Errors.getJson(Error.INVALID_OTP);
 
 		try {
@@ -258,18 +316,7 @@ class PasskyAPI {
 			});
 
 			const response: AccountTokenResponse = await result.json();
-			if (Validate.response(response)) {
-				if (response.error !== 0 || !encryptionHash) return response;
-
-				response.passwords.forEach((passwordData) => {
-					passwordData.website = XChaCha20.decrypt(passwordData.website, encryptionHash);
-					passwordData.username = XChaCha20.decrypt(passwordData.username, encryptionHash);
-					passwordData.password = XChaCha20.decrypt(passwordData.password, encryptionHash);
-					passwordData.message = XChaCha20.decrypt(passwordData.message, encryptionHash);
-				});
-
-				return response;
-			}
+			if (Validate.response(response)) return response;
 
 			return Errors.getJson(Error.UNKNOWN_ERROR);
 		} catch (err) {
@@ -285,7 +332,7 @@ class PasskyAPI {
 	 */
 	async getToken(otp: string = ""): Promise<AccountTokenResponse> {
 		if (!this.authenticationHash) return Errors.getJson(Error.INVALID_HASH);
-		const res = await PasskyAPI.getToken(this.server, this.username, this.authenticationHash, this.encryptionHash, otp);
+		const res = await PasskyAPI.getToken(this.server, this.username, this.authenticationHash, otp);
 		if (res.error === Error.SUCCESS || res.error === Error.NO_SAVED_PASSWORDS) this.token = res.token;
 		return res;
 	}
@@ -297,14 +344,12 @@ class PasskyAPI {
 	 * @param {string} server - The URL of the server.
 	 * @param {string} username - The username for authentication.
 	 * @param {string} token - The authentication token.
-	 * @param {string | null} encryptionHash - The hash used for password decryption.
 	 * @returns {Promise<AccountPasswordsResponse>} A promise resolving to the response containing the passwords.
 	 */
-	static async getPasswords(server: string, username: string, token: string, encryptionHash: string | null): Promise<AccountPasswordsResponse> {
+	static async getPasswords(server: string, username: string, token: string): Promise<AccountPasswordsResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
-		if (encryptionHash && !Validate.hash(encryptionHash)) return Errors.getJson(Error.INVALID_HASH);
 
 		try {
 			const headers = new Headers();
@@ -316,18 +361,7 @@ class PasskyAPI {
 			});
 
 			const response: AccountPasswordsResponse = await result.json();
-			if (Validate.response(response)) {
-				if (response.error !== 0 || !encryptionHash) return response;
-
-				response.passwords.forEach((passwordData) => {
-					passwordData.website = XChaCha20.decrypt(passwordData.website, encryptionHash);
-					passwordData.username = XChaCha20.decrypt(passwordData.username, encryptionHash);
-					passwordData.password = XChaCha20.decrypt(passwordData.password, encryptionHash);
-					passwordData.message = XChaCha20.decrypt(passwordData.message, encryptionHash);
-				});
-
-				return response;
-			}
+			if (Validate.response(response)) return response;
 
 			return Errors.getJson(Error.UNKNOWN_ERROR);
 		} catch (err) {
@@ -342,7 +376,7 @@ class PasskyAPI {
 	 */
 	async getPasswords(): Promise<AccountPasswordsResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
-		return await PasskyAPI.getPasswords(this.server, this.username, this.token, this.encryptionHash);
+		return await PasskyAPI.getPasswords(this.server, this.username, this.token);
 	}
 
 	/**
