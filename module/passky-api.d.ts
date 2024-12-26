@@ -566,6 +566,42 @@ export declare class PasskyAPI {
 	 */
 	generateEncryptionHash(): Promise<string | null>;
 	/**
+	 * Encrypts a single plain-text password object using the provided encryption hash.
+	 *
+	 * @static
+	 * @param {Password} passwordData - The plain-text password object to be encrypted.
+	 * @param {string} encryptionHash - The encryption hash used to securely encrypt the password fields.
+	 * @returns {Password} The encrypted password object with all fields encrypted using the provided hash.
+	 */
+	static encryptPassword(passwordData: Password, encryptionHash: string): Password;
+	/**
+	 * Encrypts a single plain-text password object using the class's encryption hash.
+	 * Returns `null` if the encryption hash is not set.
+	 *
+	 * @param {Password} passwordData - The plain-text password object to be encrypted.
+	 * @returns {Password | null} The encrypted password object with all fields encrypted using the class's encryption hash,
+	 * or `null` if the encryption hash is not available.
+	 */
+	encryptPassword(passwordData: Password): Password | null;
+	/**
+	 * Encrypts an array of plain-text password objects using the provided encryption hash.
+	 *
+	 * @static
+	 * @param {Password[]} passwords - An array of plain-text password objects to be encrypted.
+	 * @param {string} encryptionHash - The encryption hash used to securely encrypt the password fields.
+	 * @returns {Password[]} An array of encrypted password objects, where all fields are encrypted using the provided hash.
+	 */
+	static encryptPasswords(passwords: Password[], encryptionHash: string): Password[];
+	/**
+	 * Encrypts an array of plain-text password objects using the class's encryption hash.
+	 * Returns `null` if the encryption hash is not set.
+	 *
+	 * @param {Password[]} passwords - An array of plain-text password objects to be encrypted.
+	 * @returns {Password[] | null} An array of encrypted password objects with all fields encrypted
+	 * using the class's encryption hash, or `null` if the encryption hash is not available.
+	 */
+	encryptPasswords(passwords: Password[]): Password[] | null;
+	/**
 	 * Decrypts a single encrypted password object using the provided encryption hash.
 	 *
 	 * @static

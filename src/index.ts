@@ -47,7 +47,7 @@ document.getElementById("btn-get-token")?.addEventListener("click", async () => 
 		if (loggedInPage) loggedInPage.style.display = "block";
 
 		if (Array.isArray(res.passwords)) {
-			populatePasswordsTable(res.passwords);
+			populatePasswordsTable(account.decryptPasswords(res.passwords) || []);
 		}
 	}
 });
@@ -86,7 +86,7 @@ document.getElementById("btn-save-password")?.addEventListener("click", async ()
 
 	if (res.error === 0) {
 		const res2 = await account.getPasswords();
-		if (res2.error === 0) populatePasswordsTable(res2.passwords);
+		if (res2.error === 0) populatePasswordsTable(account.decryptPasswords(res2.passwords) || []);
 	}
 });
 
