@@ -43,6 +43,14 @@
 			.red {
 				background-color: #f8d7da;
 			}
+
+			th {
+				padding: 10px;
+			}
+
+			td {
+				padding: 10px;
+			}
 		</style>
 	</head>
 	<body>
@@ -73,6 +81,26 @@
 					<button id="btn-delete-account">Delete</button>
 				</div>
 				<h4>Passwords</h4>
+				<div>
+					<input type="number" id="input-passwords-id" placeholder="ID" /><br />
+					<input type="text" id="input-passwords-website" placeholder="Website" /><br />
+					<input type="text" id="input-passwords-username" placeholder="Username" /><br />
+					<input type="password" id="input-passwords-password" placeholder="Password" /><br />
+					<textarea id="input-passwords-message" placeholder="Message"></textarea><br />
+					<button id="btn-save-password">Save Password</button>
+					<button id="btn-edit-password">Edit Password</button>
+				</div>
+				<br />
+				<table id="table-passwords" border="1">
+					<tr>
+						<th>ID</th>
+						<th>Website</th>
+						<th>Username</th>
+						<th>Password</th>
+						<th>Message</th>
+					</tr>
+				</table>
+				<br />
 				<div>
 					<button id="btn-delete-passwords">Delete Passwords</button>
 				</div>

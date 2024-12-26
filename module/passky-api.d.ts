@@ -614,10 +614,11 @@ export declare class PasskyAPI {
 	 * @param {string} server - The server URL to fetch the token from.
 	 * @param {string} username - The username for authentication.
 	 * @param {string} authenticationHash - The hash generated for authentication.
+	 * @param {string | null} encryptionHash - The hash used for password decryption.
 	 * @param {string} [otp=""] - An optional one-time password (OTP) for 2FA.
 	 * @returns {Promise<AccountTokenResponse>} A promise resolving to the token response.
 	 */
-	static getToken(server: string, username: string, authenticationHash: string, otp?: string): Promise<AccountTokenResponse>;
+	static getToken(server: string, username: string, authenticationHash: string, encryptionHash: string | null, otp?: string): Promise<AccountTokenResponse>;
 	/**
 	 * Fetches and sets an authentication token using the current instance's details.
 	 *
@@ -632,9 +633,10 @@ export declare class PasskyAPI {
 	 * @param {string} server - The URL of the server.
 	 * @param {string} username - The username for authentication.
 	 * @param {string} token - The authentication token.
+	 * @param {string | null} encryptionHash - The hash used for password decryption.
 	 * @returns {Promise<AccountPasswordsResponse>} A promise resolving to the response containing the passwords.
 	 */
-	static getPasswords(server: string, username: string, token: string): Promise<AccountPasswordsResponse>;
+	static getPasswords(server: string, username: string, token: string, encryptionHash: string | null): Promise<AccountPasswordsResponse>;
 	/**
 	 * Fetches the user's passwords using the instance's server, username, and token.
 	 *

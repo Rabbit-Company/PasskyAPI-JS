@@ -215,7 +215,7 @@ class PasskyAPI {
 	 * @param {string} email - The email address for the new account.
 	 * @returns {Promise<StandardResponse>} A promise resolving to the response of the account creation operation.
 	 */
-	async createAccount(email: string) {
+	async createAccount(email: string): Promise<StandardResponse> {
 		if (!this.authenticationHash) return Errors.getJson(Error.INVALID_HASH);
 		return await PasskyAPI.createAccount(this.server, this.username, this.authenticationHash, email);
 	}
@@ -227,13 +227,21 @@ class PasskyAPI {
 	 * @param {string} server - The server URL to fetch the token from.
 	 * @param {string} username - The username for authentication.
 	 * @param {string} authenticationHash - The hash generated for authentication.
+	 * @param {string | null} encryptionHash - The hash used for password decryption.
 	 * @param {string} [otp=""] - An optional one-time password (OTP) for 2FA.
 	 * @returns {Promise<AccountTokenResponse>} A promise resolving to the token response.
 	 */
-	static async getToken(server: string, username: string, authenticationHash: string, otp: string = ""): Promise<AccountTokenResponse> {
+	static async getToken(
+		server: string,
+		username: string,
+		authenticationHash: string,
+		encryptionHash: string | null,
+		otp: string = ""
+	): Promise<AccountTokenResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME);
 		if (!Validate.hash(authenticationHash)) return Errors.getJson(Error.INVALID_HASH);
+		if (encryptionHash && !Validate.hash(encryptionHash)) return Errors.getJson(Error.INVALID_HASH);
 		if (!Validate.otp(otp)) return Errors.getJson(Error.INVALID_OTP);
 
 		try {
@@ -250,7 +258,18 @@ class PasskyAPI {
 			});
 
 			const response: AccountTokenResponse = await result.json();
-			if (Validate.response(response)) return response;
+			if (Validate.response(response)) {
+				if (response.error !== 0 || !encryptionHash) return response;
+
+				response.passwords.forEach((passwordData) => {
+					passwordData.website = XChaCha20.decrypt(passwordData.website, encryptionHash);
+					passwordData.username = XChaCha20.decrypt(passwordData.username, encryptionHash);
+					passwordData.password = XChaCha20.decrypt(passwordData.password, encryptionHash);
+					passwordData.message = XChaCha20.decrypt(passwordData.message, encryptionHash);
+				});
+
+				return response;
+			}
 
 			return Errors.getJson(Error.UNKNOWN_ERROR);
 		} catch (err) {
@@ -266,7 +285,7 @@ class PasskyAPI {
 	 */
 	async getToken(otp: string = ""): Promise<AccountTokenResponse> {
 		if (!this.authenticationHash) return Errors.getJson(Error.INVALID_HASH);
-		const res = await PasskyAPI.getToken(this.server, this.username, this.authenticationHash, otp);
+		const res = await PasskyAPI.getToken(this.server, this.username, this.authenticationHash, this.encryptionHash, otp);
 		if (res.error === Error.SUCCESS || res.error === Error.NO_SAVED_PASSWORDS) this.token = res.token;
 		return res;
 	}
@@ -278,12 +297,14 @@ class PasskyAPI {
 	 * @param {string} server - The URL of the server.
 	 * @param {string} username - The username for authentication.
 	 * @param {string} token - The authentication token.
+	 * @param {string | null} encryptionHash - The hash used for password decryption.
 	 * @returns {Promise<AccountPasswordsResponse>} A promise resolving to the response containing the passwords.
 	 */
-	static async getPasswords(server: string, username: string, token: string): Promise<AccountPasswordsResponse> {
+	static async getPasswords(server: string, username: string, token: string, encryptionHash: string | null): Promise<AccountPasswordsResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
+		if (encryptionHash && !Validate.hash(encryptionHash)) return Errors.getJson(Error.INVALID_HASH);
 
 		try {
 			const headers = new Headers();
@@ -295,7 +316,18 @@ class PasskyAPI {
 			});
 
 			const response: AccountPasswordsResponse = await result.json();
-			if (Validate.response(response)) return response;
+			if (Validate.response(response)) {
+				if (response.error !== 0 || !encryptionHash) return response;
+
+				response.passwords.forEach((passwordData) => {
+					passwordData.website = XChaCha20.decrypt(passwordData.website, encryptionHash);
+					passwordData.username = XChaCha20.decrypt(passwordData.username, encryptionHash);
+					passwordData.password = XChaCha20.decrypt(passwordData.password, encryptionHash);
+					passwordData.message = XChaCha20.decrypt(passwordData.message, encryptionHash);
+				});
+
+				return response;
+			}
 
 			return Errors.getJson(Error.UNKNOWN_ERROR);
 		} catch (err) {
@@ -310,7 +342,7 @@ class PasskyAPI {
 	 */
 	async getPasswords(): Promise<AccountPasswordsResponse> {
 		if (!this.token) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
-		return await PasskyAPI.getPasswords(this.server, this.username, this.token);
+		return await PasskyAPI.getPasswords(this.server, this.username, this.token, this.encryptionHash);
 	}
 
 	/**
@@ -463,7 +495,7 @@ class PasskyAPI {
 	 * @param {string | number} passwordID - The ID of the password to delete.
 	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
 	 */
-	static async deletePassword(server: string, username: string, token: string, passwordID: string | number) {
+	static async deletePassword(server: string, username: string, token: string, passwordID: string | number): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
@@ -511,7 +543,7 @@ class PasskyAPI {
 	 * @param {string} token - The authentication token.
 	 * @returns {Promise<StandardResponse>} A promise resolving to the response status.
 	 */
-	static async deletePasswords(server: string, username: string, token: string) {
+	static async deletePasswords(server: string, username: string, token: string): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
@@ -551,7 +583,7 @@ class PasskyAPI {
 	 * @param {string} token - The user's authentication token.
 	 * @returns {Promise<StandardResponse>} - A promise resolving to the server's response.
 	 */
-	static async deleteAccount(server: string, username: string, token: string) {
+	static async deleteAccount(server: string, username: string, token: string): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
@@ -590,7 +622,7 @@ class PasskyAPI {
 	 * @param {string} token - The user's authentication token.
 	 * @returns {Promise<AccountEnable2FaResponse>} - A promise resolving to the server's response.
 	 */
-	static async enable2FA(server: string, username: string, token: string) {
+	static async enable2FA(server: string, username: string, token: string): Promise<AccountEnable2FaResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
@@ -629,7 +661,7 @@ class PasskyAPI {
 	 * @param {string} token - The user's authentication token.
 	 * @returns {Promise<StandardResponse>} - A promise resolving to the server's response.
 	 */
-	static async disable2FA(server: string, username: string, token: string) {
+	static async disable2FA(server: string, username: string, token: string): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
@@ -669,7 +701,7 @@ class PasskyAPI {
 	 * @param {string} yubiKeyOTP - The one-time password generated by the YubiKey.
 	 * @returns {Promise<AccountAddYubiKeyResponse>} - A promise resolving to the server's response.
 	 */
-	static async addYubiKey(server: string, username: string, token: string, yubiKeyOTP: string) {
+	static async addYubiKey(server: string, username: string, token: string, yubiKeyOTP: string): Promise<AccountAddYubiKeyResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
@@ -715,7 +747,7 @@ class PasskyAPI {
 	 * @param {string} yubiKeyOTP - The YubiKey OTP to remove.
 	 * @returns {Promise<AccountRemoveYubiKeyResponse>} The response from the server.
 	 */
-	static async removeYubiKey(server: string, username: string, token: string, yubiKeyOTP: string) {
+	static async removeYubiKey(server: string, username: string, token: string, yubiKeyOTP: string): Promise<AccountRemoveYubiKeyResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
@@ -759,7 +791,7 @@ class PasskyAPI {
 	 * @param {string} email - The user's email address.
 	 * @returns {Promise<StandardResponse>} The response from the server.
 	 */
-	static async forgotUsername(server: string, email: string) {
+	static async forgotUsername(server: string, email: string): Promise<StandardResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.email(email)) return Errors.getJson(Error.INVALID_EMAIL);
 
@@ -789,7 +821,7 @@ class PasskyAPI {
 	 * @param {string} license - The license key for upgrading the account.
 	 * @returns {Promise<AccountUpgradeResponse>} The response from the server.
 	 */
-	static async upgradeAccount(server: string, username: string, token: string, license: string) {
+	static async upgradeAccount(server: string, username: string, token: string, license: string): Promise<AccountUpgradeResponse> {
 		if (!Validate.url(server)) return Errors.getJson(Error.SERVER_UNREACHABLE);
 		if (!Validate.masterUsername(username)) return Errors.getJson(Error.INVALID_USERNAME_FORMAT);
 		if (!Validate.token(token)) return Errors.getJson(Error.INVALID_OR_EXPIRED_TOKEN);
