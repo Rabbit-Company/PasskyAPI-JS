@@ -87,6 +87,23 @@ document.getElementById("btn-save-password")?.addEventListener("click", async ()
 	if (res.error === 0) await refreshPasswordTable();
 });
 
+document.getElementById("btn-edit-password")?.addEventListener("click", async () => {
+	latency = Date.now();
+
+	const passwordData: Password = {
+		id: Number(passwordsID.value),
+		website: passwordsWebsite.value,
+		username: passwordsUsername.value,
+		password: passwordsPassword.value,
+		message: passwordsMessage.value,
+	};
+
+	const res = await account.editPassword(passwordData);
+	printResponse(res);
+
+	if (res.error === 0) await refreshPasswordTable();
+});
+
 document.addEventListener("click", async (event) => {
 	if (!event.target) return;
 
