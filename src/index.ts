@@ -84,9 +84,20 @@ document.getElementById("btn-save-password")?.addEventListener("click", async ()
 	const res = await account.savePassword(passwordData);
 	printResponse(res);
 
-	if (res.error === 0) {
-		const res2 = await account.getPasswords();
-		if (res2.error === 0) populatePasswordsTable(account.decryptPasswords(res2.passwords) || []);
+	if (res.error === 0) await refreshPasswordTable();
+});
+
+document.addEventListener("click", async (event) => {
+	if (!event.target) return;
+
+	const target = event.target as HTMLElement;
+
+	if (target.classList.contains("btn-password-delete")) {
+		const passwordID = target.getAttribute("data-password-id");
+		if (passwordID) {
+			const res = await account.deletePassword(passwordID);
+			if (res.error === 0) await refreshPasswordTable();
+		}
 	}
 });
 
@@ -98,6 +109,7 @@ function populatePasswordsTable(passwords: Password[]) {
 			<th>Username</th>
 			<th>Password</th>
 			<th>Message</th>
+			<th>Action</th>
 		</tr>
 	`;
 
@@ -109,9 +121,15 @@ function populatePasswordsTable(passwords: Password[]) {
 				<td>${passwordData.username}</td>
 				<td>${passwordData.password}</td>
 				<td>${passwordData.message}</td>
+				<td><button class="btn-password-delete" data-password-id="${passwordData.id}">Delete</button></td>
 			</tr>
 		`;
 	});
+}
+
+async function refreshPasswordTable() {
+	const res = await account.getPasswords();
+	if (res.error === 0 || res.error === 8) populatePasswordsTable(account.decryptPasswords(res.passwords || []) || []);
 }
 
 function printResponse(response: StandardResponse) {
